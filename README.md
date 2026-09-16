@@ -27,3 +27,22 @@ Everything is stored locally in `%LOCALAPPDATA%\MyWorkDay\config.json` - nothing
 ## Updates
 
 New versions are published as [GitHub Releases](../../releases). Download and run the latest installer over your existing install to update.
+
+## Building from source
+
+MyWorkDay is a single self-contained file: `myworkday_app.py`.
+
+```
+pip install pywebview
+python myworkday_app.py
+```
+
+The published installer bakes in a real Google OAuth client so "Connect Google" works with
+zero setup - that value isn't in this public source (it's filled in at release-build time).
+Running from source, "Connect Google" needs your own OAuth Client ID/Secret via the
+"Advanced" section in Settings (create one at the
+[Google Cloud Console](https://console.cloud.google.com/apis/credentials), Desktop app type,
+Calendar API enabled). Jira works the same either way - no shared credential involved.
+
+To build your own installer, see `installer/myworkday.iss` (requires
+[Inno Setup](https://jrsoftware.org/isinfo.php) and [PyInstaller](https://pyinstaller.org/)).
