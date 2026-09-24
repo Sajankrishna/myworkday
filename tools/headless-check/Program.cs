@@ -67,7 +67,7 @@ Console.WriteLine();
 Console.WriteLine("== GetCommentedRowsAsync with an explicit watched ticket ==");
 if (myAccountId != null)
 {
-    foreach (var watchedKey in new[] { "CAD-6247", "CAD-6868" })
+    foreach (var watchedKey in new[] { "CAD-6247", "CAD-6868", "CAD-7550" })
     {
         var watched = await jira.GetCommentedRowsAsync(myAccountId, 7, new[] { watchedKey });
         if (watched.TryGetValue(watchedKey, out var r))
@@ -149,6 +149,88 @@ if (myAccountId != null)
             config.Save(cfgNow);
             Console.WriteLine($"Added to WATCHED_TICKETS: {string.Join(", ", toAdd)}");
         }
+    }
+}
+
+Console.WriteLine();
+Console.WriteLine("== Raw assignee/reporter + my-comment check for CAD-7550 ==");
+{
+    var cfgRaw = config.Load();
+    if (cfgRaw.JiraBaseUrl != null && cfgRaw.JiraEmail != null && cfgRaw.JiraApiToken != null)
+    {
+        using var http = new System.Net.Http.HttpClient();
+        var auth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{cfgRaw.JiraEmail}:{cfgRaw.JiraApiToken}"));
+
+        using (var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get,
+            cfgRaw.JiraBaseUrl!.TrimEnd('/') + "/rest/api/3/issue/CAD-7550?fields=assignee,reporter,updated,status"))
+        {
+            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+            using var resp = await http.SendAsync(req);
+            var doc = System.Text.Json.JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+            var f = doc.RootElement.GetProperty("fields");
+            var assignee = f.TryGetProperty("assignee", out var a) && a.ValueKind != System.Text.Json.JsonValueKind.Null ? a.GetProperty("displayName").GetString() : "(none)";
+            var reporter = f.TryGetProperty("reporter", out var rp) && rp.ValueKind != System.Text.Json.JsonValueKind.Null ? rp.GetProperty("displayName").GetString() : "(none)";
+            Console.WriteLine($"assignee={assignee}, reporter={reporter}, updated={f.GetProperty("updated").GetString()}, status={f.GetProperty("status").GetProperty("name").GetString()}");
+        }
+
+        using (var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get,
+            cfgRaw.JiraBaseUrl!.TrimEnd('/') + "/rest/api/3/issue/CAD-7550/comment?maxResults=100&orderBy=-created"))
+        {
+            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+            using var resp = await http.SendAsync(req);
+            var doc = System.Text.Json.JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+            foreach (var c in doc.RootElement.GetProperty("comments").EnumerateArray())
+            {
+                var authorId = c.GetProperty("author").GetProperty("accountId").GetString();
+                var authorName = c.GetProperty("author").GetProperty("displayName").GetString();
+                var created = c.GetProperty("created").GetString();
+                var mine = authorId == myAccountId ? " <-- ME" : "";
+                Console.WriteLine($"  comment by {authorName} @ {created}{mine}");
+            }
+        }
+    }
+}
+
+Console.WriteLine();
+Console.WriteLine("== Scanning Bryan Ponce's tickets specifically (not on the team roster) ==");
+{
+    const string bryanAccountId = "712020:0249d9fd-eda6-4478-8384-17454a4f7480";
+    var cfgRaw = config.Load();
+    using var http = new System.Net.Http.HttpClient();
+    var auth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{cfgRaw.JiraEmail}:{cfgRaw.JiraApiToken}"));
+    var jql = $"assignee = \"{bryanAccountId}\" AND updated >= \"-2d\" ORDER BY updated DESC";
+    var body = System.Text.Json.JsonSerializer.Serialize(new { jql, fields = new[] { "summary" }, maxResults = 50 });
+    using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, cfgRaw.JiraBaseUrl!.TrimEnd('/') + "/rest/api/3/search/jql");
+    req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+    req.Content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json");
+    using var resp = await http.SendAsync(req);
+    var doc = System.Text.Json.JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+    var bryanIssues = doc.RootElement.GetProperty("issues").EnumerateArray()
+        .Select(i => i.GetProperty("key").GetString()!).ToList();
+    Console.WriteLine($"Bryan's tickets updated in last 2 days: {string.Join(", ", bryanIssues)}");
+
+    var bryanFound = new List<string>();
+    foreach (var key in bryanIssues)
+    {
+        using var creq = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get,
+            cfgRaw.JiraBaseUrl!.TrimEnd('/') + $"/rest/api/3/issue/{key}/comment?maxResults=100&orderBy=-created");
+        creq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+        using var cresp = await http.SendAsync(creq);
+        var cdoc = System.Text.Json.JsonDocument.Parse(await cresp.Content.ReadAsStringAsync());
+        var mineToday = cdoc.RootElement.GetProperty("comments").EnumerateArray()
+            .Where(c => c.GetProperty("author").GetProperty("accountId").GetString() == myAccountId)
+            .Select(c => DateTimeOffset.Parse(c.GetProperty("created").GetString()!))
+            .Any(ts => WorkDate.KeyFor(ts) == WorkDate.Today());
+        if (mineToday) bryanFound.Add(key);
+    }
+    Console.WriteLine($"Bryan's tickets with my comment today: {string.Join(", ", bryanFound)}");
+
+    var toAdd = bryanFound.Where(k => !cfgRaw.WatchedTickets.Contains(k)).ToList();
+    if (toAdd.Count > 0)
+    {
+        cfgRaw.WatchedTickets.AddRange(toAdd);
+        config.Save(cfgRaw);
+        Console.WriteLine($"Added to WATCHED_TICKETS: {string.Join(", ", toAdd)}");
     }
 }
 
