@@ -102,31 +102,11 @@ public sealed class DashboardService
                     }
                 }
 
+                // Fetched only for the "open tickets assigned to you" stat and (indirectly)
+                // for the needs-logging list's real status/summary data - NOT merged into "My
+                // Work" itself. My Work is real day-scoped activity only (a worklog entry or a
+                // comment on the selected day), never an assignment with nothing behind it.
                 openAssigned = await _jira.GetMyOpenAssignedAsync();
-
-                // "My Work" shouldn't go empty just because you haven't logged time or
-                // commented yet today - merge in your currently assigned, in-progress tickets
-                // too (day-agnostic, so only for today's own view, not a past-day lookup).
-                // Zero logged minutes and no timeline entries - real assignment, nothing
-                // invented.
-                if (dateKey == today)
-                {
-                    foreach (var o in openAssigned)
-                    {
-                        if (rows.ContainsKey(o.Key)) continue;
-                        rows[o.Key] = new TicketDayRow
-                        {
-                            Key = o.Key,
-                            Summary = o.Summary,
-                            Status = o.Status,
-                            StatusCategory = o.StatusCategory,
-                            LoggedMinutes = 0,
-                            ExpectedMinutes = o.ExpectedMinutes,
-                            JiraUrl = o.JiraUrl,
-                            Actions = new List<TicketAction>(),
-                        };
-                    }
-                }
 
                 // Week total: sum this same day-bucket rule across the last 7 calendar days,
                 // one worklog fetch per day - small, bounded fan-out.
@@ -148,10 +128,9 @@ public sealed class DashboardService
         var loggedMinutes = ticketRows.Sum(r => r.LoggedMinutes);
         var commentsMade = ticketRows.Sum(r => r.Actions.Count(a => a.Kind == "comment"));
 
-        // Tickets that need attention today: everything in "My Work" (assigned & in progress,
-        // commented on, or otherwise touched) that has no real worklog time on it yet - a
-        // ticket you only commented on still needs its time logged, so it belongs here too,
-        // not just assigned-but-untouched ones.
+        // Tickets that need attention today: everything real in "My Work" (comment or worklog
+        // activity) with no worklog time on it yet - in practice, tickets you commented on but
+        // haven't logged time for.
         var needsLogging = dateKey == today
             ? ticketRows.Where(r => r.LoggedMinutes == 0)
                 .Select(r => new OpenTicketRow { Key = r.Key, Summary = r.Summary, Status = r.Status, StatusCategory = r.StatusCategory, JiraUrl = r.JiraUrl, ExpectedMinutes = r.ExpectedMinutes })
