@@ -21,7 +21,7 @@ var todayData = await dashboard.RefreshAsync();
 Console.WriteLine($"SelectedDate={todayData.SelectedDate} (WorkDate.Today={WorkDate.Today()}) Tickets={todayData.Tickets.Count}");
 foreach (var t in todayData.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}] logged={t.LoggedMinutes}m");
 Console.WriteLine($"NeedsLogging={todayData.NeedsLogging.Count}");
-foreach (var n in todayData.NeedsLogging) Console.WriteLine($"  - {n.Key} ({n.Status})");
+foreach (var n in todayData.NeedsLogging) Console.WriteLine($"  - {n.Key} ({n.Status}) expected={(n.ExpectedMinutes is { } m ? m + "m" : "none")}");
 
 var pastDateKey = WorkDate.KeyFor(DateTimeOffset.UtcNow.AddDays(-3));
 Console.WriteLine();

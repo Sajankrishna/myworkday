@@ -80,6 +80,7 @@ public sealed class DashboardService
                                 Status = existing.Status,
                                 StatusCategory = existing.StatusCategory,
                                 LoggedMinutes = existing.LoggedMinutes,
+                                ExpectedMinutes = existing.ExpectedMinutes ?? commentRow.ExpectedMinutes,
                                 JiraUrl = existing.JiraUrl,
                                 Actions = merged,
                             };
@@ -93,6 +94,7 @@ public sealed class DashboardService
                                 Status = commentRow.Status,
                                 StatusCategory = commentRow.StatusCategory,
                                 LoggedMinutes = 0,
+                                ExpectedMinutes = commentRow.ExpectedMinutes,
                                 JiraUrl = commentRow.JiraUrl,
                                 Actions = todaysComments,
                             };
@@ -119,6 +121,7 @@ public sealed class DashboardService
                             Status = o.Status,
                             StatusCategory = o.StatusCategory,
                             LoggedMinutes = 0,
+                            ExpectedMinutes = o.ExpectedMinutes,
                             JiraUrl = o.JiraUrl,
                             Actions = new List<TicketAction>(),
                         };
@@ -151,7 +154,7 @@ public sealed class DashboardService
         // not just assigned-but-untouched ones.
         var needsLogging = dateKey == today
             ? ticketRows.Where(r => r.LoggedMinutes == 0)
-                .Select(r => new OpenTicketRow { Key = r.Key, Summary = r.Summary, Status = r.Status, StatusCategory = r.StatusCategory, JiraUrl = r.JiraUrl })
+                .Select(r => new OpenTicketRow { Key = r.Key, Summary = r.Summary, Status = r.Status, StatusCategory = r.StatusCategory, JiraUrl = r.JiraUrl, ExpectedMinutes = r.ExpectedMinutes })
                 .ToList()
             : new List<OpenTicketRow>();
 

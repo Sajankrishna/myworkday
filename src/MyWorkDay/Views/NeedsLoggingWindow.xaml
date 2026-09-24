@@ -15,12 +15,20 @@
                     <DataTemplate>
                         <Border Background="{StaticResource OrangeWash}" CornerRadius="10" Padding="10,10" Margin="0,0,0,8">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource Blue}"/>
-                                    <Border Style="{StaticResource StatusPill}" Margin="8,0,0,0" Visibility="{Binding Status, Converter={StaticResource NullToVis}}">
-                                        <TextBlock Text="{Binding Status}" Style="{StaticResource StatusPillText}"/>
-                                    </Border>
-                                </StackPanel>
+                                <Grid>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource Blue}"/>
+                                        <Border Style="{StaticResource StatusPill}" Margin="8,0,0,0" Visibility="{Binding Status, Converter={StaticResource NullToVis}}">
+                                            <TextBlock Text="{Binding Status}" Style="{StaticResource StatusPillText}"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock HorizontalAlignment="Right" FontSize="11.5" FontWeight="SemiBold" Foreground="#9A3412"
+                                               Visibility="{Binding ExpectedMinutes, Converter={StaticResource NullToVis}}"
+                                               ToolTip="Jira's Original Estimate for this ticket">
+                                        <Run Text="Expected: "/>
+                                        <Run Text="{Binding ExpectedMinutes, Converter={StaticResource MinutesLabel}, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </Grid>
                                 <TextBlock Text="{Binding Summary}" FontSize="12" Margin="0,5,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>

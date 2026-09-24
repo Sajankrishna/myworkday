@@ -28,6 +28,9 @@ public sealed class TicketDayRow
     public string? Status { get; init; }
     public string? StatusCategory { get; init; } // "new" | "indeterminate" | "done"
     public int LoggedMinutes { get; init; }
+    // Jira's own "Original Estimate" (timetracking.originalEstimateSeconds) - a real, manually
+    // set field, when Jira has one for this ticket. Null (not 0) means nobody estimated it.
+    public int? ExpectedMinutes { get; init; }
     public List<TicketAction> Actions { get; init; } = new();
     public string? JiraUrl { get; init; }
 
@@ -47,6 +50,8 @@ public sealed class OpenTicketRow
     public string? Status { get; init; }
     public string? StatusCategory { get; init; }
     public string? JiraUrl { get; init; }
+    // Jira's own "Original Estimate", when set on the ticket - null means unset, not zero.
+    public int? ExpectedMinutes { get; init; }
 }
 
 public sealed class DonutSlice

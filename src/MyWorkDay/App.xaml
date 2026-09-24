@@ -67,6 +67,7 @@
             <conv:StrengthPctToBrushConverter x:Key="StrengthPctToBrush"/>
             <conv:IndexToPaletteBrushConverter x:Key="IndexToPaletteBrush"/>
             <conv:NeedsLoggingCountToLabelConverter x:Key="NeedsLoggingCountToLabel"/>
+            <conv:MinutesLabelConverter x:Key="MinutesLabel"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
             <Style x:Key="CardStyle" TargetType="Border">

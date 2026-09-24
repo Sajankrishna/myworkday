@@ -152,10 +152,10 @@ public sealed class JiraService
         var hi = day.AddDays(1).ToString("yyyy-MM-dd");
         var jql = $"worklogAuthor = \"{accountId}\" AND worklogDate >= \"{lo}\" AND worklogDate <= \"{hi}\"";
 
-        List<(string Key, string Summary, string? Status, string? Category)> candidates;
+        List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)> candidates;
         try
         {
-            candidates = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status" });
+            candidates = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status", "timetracking" });
         }
         catch (Exception ex)
         {
@@ -181,6 +181,7 @@ public sealed class JiraService
                 Status = c.Status,
                 StatusCategory = c.Category,
                 LoggedMinutes = total,
+                ExpectedMinutes = c.ExpectedMinutes,
                 JiraUrl = b + "/browse/" + c.Key,
                 Actions = entries.Select(x => new TicketAction
                 {
@@ -275,10 +276,10 @@ public sealed class JiraService
 
         var since = DateTimeOffset.Now.AddDays(-lookbackDays);
         var jql = $"(assignee = \"{accountId}\" OR reporter = \"{accountId}\") AND updated >= \"{since:yyyy/MM/dd HH:mm}\"";
-        List<(string Key, string Summary, string? Status, string? Category)> issues;
+        List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)> issues;
         try
         {
-            issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status" });
+            issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status", "timetracking" });
         }
         catch (Exception ex)
         {
@@ -302,6 +303,7 @@ public sealed class JiraService
                 Status = issue.Status,
                 StatusCategory = issue.Category,
                 LoggedMinutes = 0,
+                ExpectedMinutes = issue.ExpectedMinutes,
                 JiraUrl = b + "/browse/" + issue.Key,
                 Actions = comments,
             };
@@ -352,7 +354,7 @@ public sealed class JiraService
         try
         {
             var jql = "assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC";
-            var issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status" });
+            var issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status", "timetracking" });
             foreach (var i in issues)
                 rows.Add(new OpenTicketRow
                 {
@@ -360,6 +362,7 @@ public sealed class JiraService
                     Summary = i.Summary,
                     Status = i.Status,
                     StatusCategory = i.Category,
+                    ExpectedMinutes = i.ExpectedMinutes,
                     JiraUrl = b + "/browse/" + i.Key,
                 });
         }
@@ -415,10 +418,10 @@ public sealed class JiraService
         var lo = day.AddDays(-1).ToString("yyyy-MM-dd");
         var hi = day.AddDays(1).ToString("yyyy-MM-dd");
         var jql = $"worklogAuthor = \"{accountId}\" AND worklogDate >= \"{lo}\" AND worklogDate <= \"{hi}\"";
-        List<(string Key, string Summary, string? Status, string? Category)> issues;
+        List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)> issues;
         try
         {
-            issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status" });
+            issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status", "timetracking" });
         }
         catch
         {
@@ -473,7 +476,7 @@ public sealed class JiraService
         return mins;
     }
 
-    private async Task<List<(string Key, string Summary, string? Status, string? Category)>> SearchIssuesAsync(
+    private async Task<List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)>> SearchIssuesAsync(
         string baseUrl, string email, string token, string jql, string[] fields)
     {
         var body = new JsonObject
@@ -487,7 +490,7 @@ public sealed class JiraService
         using var resp = await _http.SendAsync(req);
         if (!resp.IsSuccessStatusCode) return new();
         var json = await resp.Content.ReadFromJsonAsync<JsonNode>();
-        var outp = new List<(string, string, string?, string?)>();
+        var outp = new List<(string, string, string?, string?, int?)>();
         foreach (var issue in json?["issues"]?.AsArray() ?? new JsonArray())
         {
             if (issue is null) continue;
@@ -495,7 +498,12 @@ public sealed class JiraService
             var f = issue["fields"];
             var summary = f?["summary"]?.GetValue<string>() ?? "";
             var status = f?["status"];
-            outp.Add((key, summary, status?["name"]?.GetValue<string>(), status?["statusCategory"]?["key"]?.GetValue<string>()));
+            // Jira's own "Original Estimate" (timetracking.originalEstimateSeconds) - a real,
+            // manually-set field, when the requesting query asked for it. Never invented: a
+            // ticket nobody estimated in Jira simply has none here.
+            var estimateSecs = f?["timetracking"]?["originalEstimateSeconds"]?.GetValue<int?>();
+            int? expectedMinutes = estimateSecs.HasValue ? estimateSecs.Value / 60 : null;
+            outp.Add((key, summary, status?["name"]?.GetValue<string>(), status?["statusCategory"]?["key"]?.GetValue<string>(), expectedMinutes));
         }
         return outp;
     }
