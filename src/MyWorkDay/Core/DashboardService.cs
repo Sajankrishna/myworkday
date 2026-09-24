@@ -102,6 +102,29 @@ public sealed class DashboardService
 
                 openAssigned = await _jira.GetMyOpenAssignedAsync();
 
+                // "My Work" shouldn't go empty just because you haven't logged time or
+                // commented yet today - merge in your currently assigned, in-progress tickets
+                // too (day-agnostic, so only for today's own view, not a past-day lookup).
+                // Zero logged minutes and no timeline entries - real assignment, nothing
+                // invented.
+                if (dateKey == today)
+                {
+                    foreach (var o in openAssigned)
+                    {
+                        if (rows.ContainsKey(o.Key)) continue;
+                        rows[o.Key] = new TicketDayRow
+                        {
+                            Key = o.Key,
+                            Summary = o.Summary,
+                            Status = o.Status,
+                            StatusCategory = o.StatusCategory,
+                            LoggedMinutes = 0,
+                            JiraUrl = o.JiraUrl,
+                            Actions = new List<TicketAction>(),
+                        };
+                    }
+                }
+
                 // Week total: sum this same day-bucket rule across the last 7 calendar days,
                 // one worklog fetch per day - small, bounded fan-out.
                 var weekDates = Enumerable.Range(0, 7).Select(i => WorkDate.KeyFor(DateTimeOffset.UtcNow.AddDays(-i))).Distinct();

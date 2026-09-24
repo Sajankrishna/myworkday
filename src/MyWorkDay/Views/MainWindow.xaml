@@ -243,23 +243,26 @@
                                                                 <TextBlock Text="{Binding ActivityKind}" FontSize="9.5" Foreground="{StaticResource Muted}" HorizontalAlignment="Right"/>
                                                             </StackPanel>
                                                         </Grid>
-                                                        <ItemsControl ItemsSource="{Binding Actions}" Margin="0,6,0,0"
-                                                                      Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                    <Grid Margin="0,2">
-                                                                        <Grid.ColumnDefinitions>
-                                                                            <ColumnDefinition Width="60"/>
-                                                                            <ColumnDefinition Width="90"/>
-                                                                            <ColumnDefinition Width="*"/>
-                                                                        </Grid.ColumnDefinitions>
-                                                                        <TextBlock Grid.Column="0" Text="{Binding TimeLabel}" FontSize="11" Foreground="{StaticResource Muted}"/>
-                                                                        <TextBlock Grid.Column="1" Text="{Binding KindLabel}" FontSize="11" FontWeight="SemiBold"/>
-                                                                        <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="11" TextTrimming="CharacterEllipsis"/>
-                                                                    </Grid>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
+                                                        <StackPanel Margin="0,6,0,0" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+                                                            <ItemsControl ItemsSource="{Binding Actions}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Grid Margin="0,2">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="60"/>
+                                                                                <ColumnDefinition Width="90"/>
+                                                                                <ColumnDefinition Width="*"/>
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Grid.Column="0" Text="{Binding TimeLabel}" FontSize="11" Foreground="{StaticResource Muted}"/>
+                                                                            <TextBlock Grid.Column="1" Text="{Binding KindLabel}" FontSize="11" FontWeight="SemiBold"/>
+                                                                            <TextBlock Grid.Column="2" Text="{Binding Message}" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                            <TextBlock Text="Assigned to you - no worklog or comment logged yet today." FontSize="11" Foreground="{StaticResource Muted}" FontStyle="Italic"
+                                                                       Visibility="{Binding Actions.Count, Converter={StaticResource ZeroToVis}, ConverterParameter=Invert}"/>
+                                                        </StackPanel>
                                                     </StackPanel>
                                                 </Border>
                                             </StackPanel>

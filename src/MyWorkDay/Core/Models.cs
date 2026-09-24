@@ -33,7 +33,7 @@ public sealed class TicketDayRow
 
     public bool HasWorklog => Actions.Any(a => a.Kind == "worklog");
     public bool HasComment => Actions.Any(a => a.Kind == "comment");
-    public string ActivityKind => HasWorklog ? "Logged time" : (HasComment ? "Commented only" : "");
+    public string ActivityKind => HasWorklog ? "Logged time" : (HasComment ? "Commented only" : "Assigned to you");
     public DateTimeOffset LastActivity => Actions.Count > 0 ? Actions.Max(a => a.Timestamp) : DateTimeOffset.MinValue;
 }
 
