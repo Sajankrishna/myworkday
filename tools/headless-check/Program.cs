@@ -105,7 +105,7 @@ if (myAccountId != null)
     {
         if (member.AccountId == myAccountId) continue; // that's "me", already covered
 
-        var jql = $"assignee = \"{member.AccountId}\" AND updated >= \"-14d\" ORDER BY updated DESC";
+        var jql = $"assignee = \"{member.AccountId}\" AND updated >= \"-2d\" ORDER BY updated DESC";
         var body = System.Text.Json.JsonSerializer.Serialize(new { jql, fields = new[] { "summary" }, maxResults = 50 });
         using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post,
             cfgNow.JiraBaseUrl!.TrimEnd('/') + "/rest/api/3/search/jql");
@@ -128,13 +128,16 @@ if (myAccountId != null)
             using var cresp = await http.SendAsync(creq);
             if (!cresp.IsSuccessStatusCode) continue;
             var cdoc = System.Text.Json.JsonDocument.Parse(await cresp.Content.ReadAsStringAsync());
-            var hasMyComment = cdoc.RootElement.GetProperty("comments").EnumerateArray()
-                .Any(c => c.GetProperty("author").GetProperty("accountId").GetString() == myAccountId);
-            if (hasMyComment) found.Add((issue.Key, issue.Summary, member.DisplayName));
+            var myTodayComment = cdoc.RootElement.GetProperty("comments").EnumerateArray()
+                .Where(c => c.GetProperty("author").GetProperty("accountId").GetString() == myAccountId)
+                .Select(c => DateTimeOffset.Parse(c.GetProperty("created").GetString()!))
+                .Where(ts => WorkDate.KeyFor(ts) == WorkDate.Today())
+                .ToList();
+            if (myTodayComment.Count > 0) found.Add((issue.Key, issue.Summary, member.DisplayName));
         }
     }
 
-    Console.WriteLine($"Found {found.Count} un-watched ticket(s) with a real comment from me:");
+    Console.WriteLine($"Found {found.Count} un-watched ticket(s) with a real comment from me TODAY ({WorkDate.Today()}):");
     foreach (var f in found) Console.WriteLine($"  - {f.Key} (assigned to {f.Assignee}): {f.Summary}");
 
     if (found.Count > 0)
