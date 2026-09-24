@@ -31,6 +31,20 @@ back to a real Jira worklog entry, a real comment, or a real assignment.
 dotnet run --project src/MyWorkDay
 ```
 
+## Build an installer
+
+Requires [Inno Setup 6](https://jrsoftware.org/isinfo.php) (`winget install JRSoftware.InnoSetup`).
+
+```powershell
+.\build-installer.ps1
+```
+
+This publishes a self-contained, single-file win-x64 build (no separate .NET runtime install
+needed on the target machine) to `publish\`, then packages it with `installer\myworkday.iss`
+into `installer\output\MyWorkDay-Setup-<version>.exe`. It's a per-user install
+(`%LOCALAPPDATA%\Programs\MyWorkDay`, no admin rights required) with an optional desktop
+shortcut and a Start Menu uninstaller - pass `-Version "1.2.0"` to stamp a specific version.
+
 ## Configuration
 
 Settings (Jira base URL/email/token, Google OAuth client/secret/refresh token, break reminder
