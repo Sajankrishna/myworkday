@@ -195,7 +195,8 @@
                                         <TextBlock Text="{Binding NeedsLogging.Count, Converter={StaticResource NeedsLoggingCountToLabel}}"/>
                                     </Button>
                                 </StackPanel>
-                                <ItemsControl ItemsSource="{Binding Tickets}" MaxHeight="420">
+                                <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Auto">
+                                <ItemsControl ItemsSource="{Binding Tickets}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate DataType="{x:Type vm:TicketRowViewModel}">
                                             <StackPanel Margin="0,0,0,2">
@@ -269,6 +270,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                                </ScrollViewer>
                                 <TextBlock Text="No tickets recorded for this day." Style="{StaticResource MutedText}" Margin="0,8,0,0"
                                            Visibility="{Binding Tickets.Count, Converter={StaticResource ZeroToVis}, ConverterParameter=Invert}"/>
                                 <TextBlock Text="View all work &#8594;" Foreground="{StaticResource Blue}" FontSize="11.5"

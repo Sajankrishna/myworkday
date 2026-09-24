@@ -145,11 +145,14 @@ public sealed class DashboardService
         var loggedMinutes = ticketRows.Sum(r => r.LoggedMinutes);
         var commentsMade = ticketRows.Sum(r => r.Actions.Count(a => a.Kind == "comment"));
 
-        // Tickets that need attention today: assigned & open, but with nothing logged on the
-        // selected day yet - a real Jira-only "needs logging" reminder.
-        var loggedKeys = ticketRows.Where(r => r.LoggedMinutes > 0).Select(r => r.Key).ToHashSet();
+        // Tickets that need attention today: everything in "My Work" (assigned & in progress,
+        // commented on, or otherwise touched) that has no real worklog time on it yet - a
+        // ticket you only commented on still needs its time logged, so it belongs here too,
+        // not just assigned-but-untouched ones.
         var needsLogging = dateKey == today
-            ? openAssigned.Where(o => !loggedKeys.Contains(o.Key)).ToList()
+            ? ticketRows.Where(r => r.LoggedMinutes == 0)
+                .Select(r => new OpenTicketRow { Key = r.Key, Summary = r.Summary, Status = r.Status, StatusCategory = r.StatusCategory, JiraUrl = r.JiraUrl })
+                .ToList()
             : new List<OpenTicketRow>();
 
         var activity = ticketRows

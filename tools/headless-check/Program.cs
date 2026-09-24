@@ -15,14 +15,33 @@ foreach (var m in teamVm.Members)
 }
 
 Console.WriteLine();
-Console.WriteLine("== DashboardService.RefreshAsync() (Activity feed) ==");
+Console.WriteLine("== DashboardService.RefreshAsync() (today) ==");
 var dashboard = new DashboardService(jira, config, errorLog);
-var data = await dashboard.RefreshAsync();
-Console.WriteLine($"Tickets={data.Tickets.Count} Activity={data.Activity.Count} Donut={data.Donut.Count}");
-foreach (var (ticket, action) in data.Activity.Take(5))
-{
-    Console.WriteLine($"  - [{action.Kind}] {ticket}: {action.Message} ({action.Minutes}m) @ {action.Timestamp:HH:mm}");
-}
+var todayData = await dashboard.RefreshAsync();
+Console.WriteLine($"SelectedDate={todayData.SelectedDate} (WorkDate.Today={WorkDate.Today()}) Tickets={todayData.Tickets.Count}");
+foreach (var t in todayData.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}] logged={t.LoggedMinutes}m");
+Console.WriteLine($"NeedsLogging={todayData.NeedsLogging.Count}");
+foreach (var n in todayData.NeedsLogging) Console.WriteLine($"  - {n.Key} ({n.Status})");
+
+var pastDateKey = WorkDate.KeyFor(DateTimeOffset.UtcNow.AddDays(-3));
+Console.WriteLine();
+Console.WriteLine($"== DashboardService.GetDataAsync({pastDateKey}) (past day) ==");
+var pastData = await dashboard.GetDataAsync(pastDateKey);
+Console.WriteLine($"SelectedDate={pastData.SelectedDate} Tickets={pastData.Tickets.Count}");
+foreach (var t in pastData.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}] logged={t.LoggedMinutes}m");
+
+Console.WriteLine();
+Console.WriteLine("== MainViewModel.ChangeDateAsync (full VM/UI-layer path) ==");
+var calendar = new GoogleCalendarService(errorLog);
+var breakReminder = new BreakReminderService(new ToastService(errorLog), 0);
+var mvm = new MainViewModel(dashboard, jira, calendar, config, errorLog, breakReminder);
+await mvm.RefreshCommand.ExecuteAsync(null);
+Console.WriteLine($"After initial refresh: SelectedDate={mvm.SelectedDate} Tickets={mvm.Tickets.Count}");
+foreach (var t in mvm.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}]");
+
+await mvm.ChangeDateAsync(pastDateKey);
+Console.WriteLine($"After ChangeDateAsync({pastDateKey}): SelectedDate={mvm.SelectedDate} Tickets={mvm.Tickets.Count}");
+foreach (var t in mvm.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}]");
 
 Console.WriteLine();
 Console.WriteLine("OK - no exceptions.");
