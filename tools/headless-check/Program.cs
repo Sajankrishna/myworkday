@@ -44,6 +44,22 @@ Console.WriteLine($"After ChangeDateAsync({pastDateKey}): SelectedDate={mvm.Sele
 foreach (var t in mvm.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}]");
 
 Console.WriteLine();
+Console.WriteLine("== JiraService.GetCommentedRowsAsync (raw, today's diagnosis) ==");
+var myAccountId = await jira.GetMyAccountIdAsync();
+Console.WriteLine($"accountId={myAccountId}");
+if (myAccountId != null)
+{
+    var commented = await jira.GetCommentedRowsAsync(myAccountId, 7);
+    Console.WriteLine($"Candidate tickets with >=1 of my comments in the last 7 days: {commented.Count}");
+    foreach (var (key, row) in commented)
+    {
+        Console.WriteLine($"  {key}: {row.Actions.Count} of my comments");
+        foreach (var a in row.Actions)
+            Console.WriteLine($"    @ {a.Timestamp:yyyy-MM-dd HH:mm:ss zzz} -> WorkDate key = {WorkDate.KeyFor(a.Timestamp)}");
+    }
+}
+
+Console.WriteLine();
 Console.WriteLine("== JiraService.SearchTicketsAsync (read-only) ==");
 var searchHits = await jira.SearchTicketsAsync("landing page");
 Console.WriteLine($"Hits for 'landing page': {searchHits.Count}");
