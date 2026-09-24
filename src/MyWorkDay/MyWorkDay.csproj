@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <AssemblyName>MyWorkDay</AssemblyName>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Product>MyWorkDay</Product>
     <Company>MyWorkDay</Company>
 
