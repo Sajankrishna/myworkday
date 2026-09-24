@@ -35,6 +35,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private int _breakReminderMins = 120;
     [ObservableProperty] private string _breakReminderStatusMessage = "";
 
+    // Comma/space-separated ticket keys - the bounded escape hatch for "I commented on a
+    // teammate's ticket, not just my own" (see GetCommentedRowsAsync's own docs for why this
+    // can't just be a broader search instead).
+    [ObservableProperty] private string _watchedTickets = "";
+    [ObservableProperty] private string _watchedTicketsStatusMessage = "";
+
     [ObservableProperty] private bool _isBusy;
 
     public event Action? SettingsChanged;
@@ -57,6 +63,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         CalendarStatusOk = cfg.CalendarConnected;
 
         BreakReminderMins = cfg.BreakReminderMins ?? 120;
+        WatchedTickets = string.Join(", ", cfg.WatchedTickets);
     }
 
     [RelayCommand]
@@ -133,6 +140,23 @@ public sealed partial class SettingsViewModel : ObservableObject
         _config.Save(cfg);
         _breakReminder.ReminderMinutes = mins;
         BreakReminderStatusMessage = mins > 0 ? "✓ Saved" : "✓ Saved - break reminders are off";
+    }
+
+    [RelayCommand]
+    private void SaveWatchedTickets()
+    {
+        var keys = WatchedTickets
+            .Split(new[] { ',', ' ', ';', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries)
+            .Select(k => k.Trim().ToUpperInvariant())
+            .Where(k => k.Length > 0)
+            .Distinct()
+            .ToList();
+        var cfg = _config.Load();
+        cfg.WatchedTickets = keys;
+        _config.Save(cfg);
+        WatchedTickets = string.Join(", ", keys);
+        WatchedTicketsStatusMessage = keys.Count > 0 ? $"✓ Saved ({keys.Count} ticket(s))" : "✓ Saved (none)";
+        SettingsChanged?.Invoke();
     }
 
     [RelayCommand]

@@ -78,6 +78,17 @@
                     <Button Style="{StaticResource ActionButton}" Content="Save" Command="{Binding SaveBreakReminderCommand}"/>
                 </StackPanel>
                 <TextBlock Text="{Binding BreakReminderStatusMessage}" FontSize="11.5" Foreground="{StaticResource Green}" Margin="0,4,0,0"/>
+
+                <Separator Margin="0,12,0,12"/>
+
+                <TextBlock Text="Also track comments on" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
+                <TextBlock TextWrapping="Wrap" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="0,0,0,6">
+                    My Work only finds comments on tickets assigned to or reported by you - a comment on a teammate's ticket won't show up otherwise. List ticket keys here (comma-separated) to also check those.
+                </TextBlock>
+                <TextBox Text="{Binding WatchedTickets, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,0,0,6"
+                         TextWrapping="Wrap" AcceptsReturn="True" MinHeight="44"/>
+                <Button Style="{StaticResource ActionButton}" Content="Save" Command="{Binding SaveWatchedTicketsCommand}" HorizontalAlignment="Left"/>
+                <TextBlock Text="{Binding WatchedTicketsStatusMessage}" FontSize="11.5" Foreground="{StaticResource Green}" Margin="0,4,0,0"/>
             </StackPanel>
         </ScrollViewer>
 

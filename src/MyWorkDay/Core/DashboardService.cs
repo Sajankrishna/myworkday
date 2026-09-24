@@ -62,7 +62,7 @@ public sealed class DashboardService
 
                 if (_accountId != null)
                 {
-                    var commentedRows = await _jira.GetCommentedRowsAsync(_accountId, CommentLookbackDays);
+                    var commentedRows = await _jira.GetCommentedRowsAsync(_accountId, CommentLookbackDays, cfg.WatchedTickets);
                     foreach (var (key, commentRow) in commentedRows)
                     {
                         // Only merge in this ticket's comments that actually fall on the

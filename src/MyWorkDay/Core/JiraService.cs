@@ -268,7 +268,7 @@ public sealed class JiraService
     /// activity signal a worklog-only view can never see. Bounded to your own issues (assignee
     /// or reporter = you), not an instance-wide scan. Returns full rows (summary/status
     /// included) so the caller doesn't need a second status lookup for comment-only tickets.</summary>
-    public async Task<Dictionary<string, TicketDayRow>> GetCommentedRowsAsync(string accountId, int lookbackDays)
+    public async Task<Dictionary<string, TicketDayRow>> GetCommentedRowsAsync(string accountId, int lookbackDays, IEnumerable<string>? extraKeys = null)
     {
         var (b, e, t) = Creds();
         var result = new Dictionary<string, TicketDayRow>();
@@ -284,7 +284,31 @@ public sealed class JiraService
         catch (Exception ex)
         {
             _errorLog.Log("GetCommentedRowsAsync search failed", ex);
-            return result;
+            issues = new();
+        }
+
+        // Explicitly watched tickets (Settings > "Also track comments on") - the bounded
+        // escape hatch for a real comment on a ticket you're neither assignee nor reporter on.
+        // Fetched by key directly rather than folded into the JQL above, so a search failure
+        // never silently drops these too.
+        var keys = extraKeys?.Select(k => k.Trim().ToUpperInvariant()).Where(k => k.Length > 0).Distinct().ToList();
+        if (keys is { Count: > 0 })
+        {
+            var alreadyHave = issues.Select(i => i.Key).ToHashSet();
+            var missing = keys.Where(k => !alreadyHave.Contains(k)).ToList();
+            if (missing.Count > 0)
+            {
+                try
+                {
+                    var watchedJql = "key in (" + string.Join(",", missing) + ")";
+                    var watchedIssues = await SearchIssuesAsync(b, e, t, watchedJql, new[] { "summary", "status", "timetracking" });
+                    issues = issues.Concat(watchedIssues).ToList();
+                }
+                catch (Exception ex)
+                {
+                    _errorLog.Log("GetCommentedRowsAsync watched-ticket lookup failed", ex);
+                }
+            }
         }
         if (issues.Count == 0) return result;
 
