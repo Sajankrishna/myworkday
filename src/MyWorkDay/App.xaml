@@ -248,6 +248,131 @@
                 </Setter>
             </Style>
 
+            <!-- ============================================================
+                 DatePicker styling - same Ezee.Church "card" shell as the
+                 ComboBox above (rounded 6px, white fill, gray border, emerald
+                 focus ring), plus a matching Calendar popup. Applied as an
+                 implicit style so every DatePicker in the app (My Work's date
+                 jump, the Team Worklog date pickers) gets it automatically. ============================================================ -->
+            <Style TargetType="CalendarDayButton">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CalendarDayButton">
+                            <Border x:Name="DayBorder" CornerRadius="6" Margin="1" Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="DayBorder" Property="Background" Value="{StaticResource EzeeHoverBg}"/>
+                                </Trigger>
+                                <Trigger Property="IsToday" Value="True">
+                                    <Setter TargetName="DayBorder" Property="BorderBrush" Value="{StaticResource EzeeFocusBorder}"/>
+                                    <Setter TargetName="DayBorder" Property="BorderThickness" Value="1"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="DayBorder" Property="Background" Value="{StaticResource EzeeSelectedBg}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                                <Trigger Property="IsBlackedOut" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource EzeePlaceholder}"/>
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="CalendarButton">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CalendarButton">
+                            <Border x:Name="MonthBorder" CornerRadius="6" Margin="1" Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="MonthBorder" Property="Background" Value="{StaticResource EzeeHoverBg}"/>
+                                </Trigger>
+                                <Trigger Property="IsInactive" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource EzeePlaceholder}"/>
+                                    <Setter Property="IsHitTestVisible" Value="False"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="Calendar">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+
+            <Style TargetType="DatePickerTextBox">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DatePickerTextBox">
+                            <TextBox x:Name="PART_TextBox" Text="{Binding Path=SelectedDate, RelativeSource={RelativeSource AncestorType=DatePicker}, StringFormat='MM/dd/yyyy'}"
+                                     Background="Transparent" BorderThickness="0" Padding="10,7" VerticalContentAlignment="Center"
+                                     Foreground="{StaticResource EzeeTextPrimary}" FontSize="12.5" IsReadOnly="True" Focusable="True"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="DatePicker">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="{StaticResource EzeeBorder}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Foreground" Value="{StaticResource EzeeTextPrimary}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DatePicker">
+                            <Grid>
+                                <Border x:Name="Shell" CornerRadius="6" Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0"/>
+                                        <Button x:Name="PART_Button" Grid.Column="1" Width="28" Focusable="False"
+                                                Background="Transparent" Padding="0" Cursor="Hand">
+                                            <Button.Template>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="Transparent">
+                                                        <TextBlock Text="&#128197;" FontSize="12" Foreground="{StaticResource EzeePlaceholder}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Button.Template>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                                <Popup x:Name="PART_Popup" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Slide">
+                                    <Border Margin="0,4,0,0" Background="White" BorderBrush="{StaticResource EzeeBorder}" BorderThickness="1" CornerRadius="8" Padding="4">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="16" ShadowDepth="3" Direction="270"/>
+                                        </Border.Effect>
+                                        <Calendar x:Name="PART_Calendar"/>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource EzeeFocusBorder}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Shell" Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

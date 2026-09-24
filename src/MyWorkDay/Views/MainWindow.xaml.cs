@@ -22,6 +22,11 @@ public partial class MainWindow : Window
         _vm = vm;
         DataContext = vm;
         InitializeComponent();
+        // Neither picker should ever offer a future date - there's no real activity to show
+        // there yet. WPF's Calendar automatically greys out/disables anything past
+        // DisplayDateEnd, so this alone is enough (no separate BlackoutDates needed).
+        DateJumpPicker.DisplayDateEnd = DateTime.Today;
+        TeamDatePicker.DisplayDateEnd = DateTime.Today;
         _vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedDate)) SyncDateJumpPicker();

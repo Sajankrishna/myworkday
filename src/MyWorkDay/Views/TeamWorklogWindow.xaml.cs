@@ -15,6 +15,7 @@ public partial class TeamWorklogWindow : Window
         _vm = vm;
         DataContext = vm;
         InitializeComponent();
+        DatePickerCtl.DisplayDateEnd = DateTime.Today;
         Loaded += (_, _) => DatePickerCtl.SelectedDate = WorkDate.Parse(_vm.SelectedDate);
     }
 
