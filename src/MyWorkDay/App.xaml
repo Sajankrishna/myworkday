@@ -1,0 +1,102 @@
+<Application x:Class="MyWorkDay.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MyWorkDay"
+             xmlns:conv="clr-namespace:MyWorkDay.Converters">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- Palette ported from the original app's CSS custom properties -->
+            <SolidColorBrush x:Key="Ink" Color="#1C2430"/>
+            <SolidColorBrush x:Key="Muted" Color="#6B7280"/>
+            <SolidColorBrush x:Key="Line" Color="#E5E7EB"/>
+            <SolidColorBrush x:Key="PageBg" Color="#EEF3FB"/>
+            <SolidColorBrush x:Key="CardBg" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="Blue" Color="#2563EB"/>
+            <SolidColorBrush x:Key="BlueWash" Color="#DBEAFE"/>
+            <SolidColorBrush x:Key="Green" Color="#16A34A"/>
+            <SolidColorBrush x:Key="GreenWash" Color="#DCFCE7"/>
+            <SolidColorBrush x:Key="Purple" Color="#7C3AED"/>
+            <SolidColorBrush x:Key="PurpleWash" Color="#EDE9FE"/>
+            <SolidColorBrush x:Key="Orange" Color="#EA580C"/>
+            <SolidColorBrush x:Key="OrangeWash" Color="#FFEDD5"/>
+            <SolidColorBrush x:Key="Red" Color="#DC2626"/>
+            <SolidColorBrush x:Key="RedWash" Color="#FEE2E2"/>
+
+            <conv:StatusCategoryToBrushConverter x:Key="StatusCategoryToBrush"/>
+            <conv:StatusCategoryToForegroundConverter x:Key="StatusCategoryToForeground"/>
+            <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
+            <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+            <conv:ZeroToVisibilityConverter x:Key="ZeroToVis"/>
+            <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+            <Style x:Key="CardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource CardBg}"/>
+                <Setter Property="CornerRadius" Value="14"/>
+                <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="16"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="14" ShadowDepth="2" Direction="270"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="CardHeaderText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="13.5"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            </Style>
+
+            <Style x:Key="MutedText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            </Style>
+
+            <Style x:Key="StatusPill" TargetType="Border">
+                <Setter Property="CornerRadius" Value="999"/>
+                <Setter Property="Padding" Value="8,2"/>
+                <Setter Property="Background" Value="{Binding StatusCategory, Converter={StaticResource StatusCategoryToBrush}}"/>
+            </Style>
+
+            <Style x:Key="StatusPillText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="10.5"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{Binding StatusCategory, Converter={StaticResource StatusCategoryToForeground}}"/>
+            </Style>
+
+            <Style x:Key="ActionButton" TargetType="Button">
+                <Setter Property="Padding" Value="12,7"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontSize" Value="11.5"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                <Setter Property="Background" Value="{StaticResource Blue}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Style>
+
+            <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                <Setter Property="Background" Value="{StaticResource BlueWash}"/>
+                <Setter Property="Foreground" Value="{StaticResource Blue}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

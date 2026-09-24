@@ -1,0 +1,91 @@
+<Window x:Class="MyWorkDay.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" Width="420" Height="680" MinWidth="380" MinHeight="480"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource PageBg}"
+        FontFamily="Segoe UI" FontSize="13">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Jira integration" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
+                <TextBlock Text="1. Open the token page and create a token." FontSize="12" Margin="0,0,0,4"/>
+                <Button Style="{StaticResource ActionButton}" Content="&#128279; Open Atlassian token page" Click="OpenTokenPage_Click" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                <TextBlock Text="2. Paste it below." FontSize="12" Margin="0,0,0,4"/>
+                <PasswordBox x:Name="TokenBox" Padding="7,7" Margin="0,0,0,8"/>
+                <Expander Header="Base URL / email" Margin="0,0,0,8">
+                    <StackPanel Margin="0,6,0,0">
+                        <TextBlock Text="Base URL" FontSize="11" Foreground="{StaticResource Muted}"/>
+                        <TextBox Text="{Binding JiraBaseUrl, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,2,0,8"/>
+                        <TextBlock Text="Email" FontSize="11" Foreground="{StaticResource Muted}"/>
+                        <TextBox Text="{Binding JiraEmail, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Expander>
+                <TextBlock Text="Stored locally in %LOCALAPPDATA%\MyWorkDay\config.json, never sent anywhere but Jira."
+                           FontSize="10.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                <TextBlock Text="{Binding JiraStatusMessage}" FontSize="11.5" Margin="0,0,0,16">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding JiraStatusOk}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource Green}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <Separator Margin="0,0,0,12"/>
+
+                <TextBlock Text="Google Calendar" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
+                <Button Style="{StaticResource PrimaryButton}" Content="&#128197; Connect Google" Command="{Binding ConnectGoogleCommand}" HorizontalAlignment="Left" Margin="0,0,0,6"/>
+                <TextBlock Text="Opens your browser for Google sign-in - only the refresh token is stored, locally."
+                           FontSize="10.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                <Expander Header="Advanced: use your own OAuth credentials" Margin="0,0,0,8">
+                    <StackPanel Margin="0,6,0,0">
+                        <TextBlock Text="Client ID" FontSize="11" Foreground="{StaticResource Muted}"/>
+                        <TextBox Text="{Binding GoogleClientId, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,2,0,8"/>
+                        <TextBlock Text="Client Secret" FontSize="11" Foreground="{StaticResource Muted}"/>
+                        <PasswordBox x:Name="GoogleSecretBox" Padding="7" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Expander>
+                <TextBlock Text="{Binding CalendarStatusMessage}" FontSize="11.5" Margin="0,0,0,16">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CalendarStatusOk}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource Green}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <Separator Margin="0,0,0,12"/>
+
+                <TextBlock Text="Break reminder" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
+                <TextBlock Text="Get a Windows notification after this many minutes of continuous activity. 0 turns it off."
+                           FontSize="10.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Text="{Binding BreakReminderMins, UpdateSourceTrigger=PropertyChanged}" Width="70" Padding="7" Margin="0,0,8,0"/>
+                    <TextBlock Text="minutes" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Button Style="{StaticResource ActionButton}" Content="Save" Command="{Binding SaveBreakReminderCommand}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding BreakReminderStatusMessage}" FontSize="11.5" Foreground="{StaticResource Green}" Margin="0,4,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Style="{StaticResource ActionButton}" Background="{StaticResource RedWash}" Foreground="{StaticResource Red}"
+                    BorderThickness="0" Content="Clear settings" Command="{Binding ClearSettingsCommand}" Margin="0,0,8,0"/>
+            <Button Style="{StaticResource ActionButton}" Content="Close" Click="Close_Click" Margin="0,0,8,0"/>
+            <Button Style="{StaticResource PrimaryButton}" Content="Save &amp; Test" Click="SaveJira_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
