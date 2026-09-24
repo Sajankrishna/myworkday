@@ -37,3 +37,36 @@ public sealed class StatusCategoryToForegroundConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
 }
+
+/// <summary>The small colored icon square on a ticket row - green check for a Done-category
+/// ticket, purple bolt for anything still in progress (indeterminate or new), echoing the
+/// Python build's merged-vs-in-progress ticon coloring with the closest Jira-only equivalent.</summary>
+public sealed class StatusCategoryToIconBackgroundConverter : IValueConverter
+{
+    private static readonly Brush Done = new SolidColorBrush(Color.FromRgb(0xDC, 0xFC, 0xE7));
+    private static readonly Brush InProgress = new SolidColorBrush(Color.FromRgb(0xED, 0xE9, 0xFE));
+
+    public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
+        => (value as string) == "done" ? Done : InProgress;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
+}
+
+public sealed class StatusCategoryToIconForegroundConverter : IValueConverter
+{
+    private static readonly Brush Done = new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A));
+    private static readonly Brush InProgress = new SolidColorBrush(Color.FromRgb(0x7C, 0x3A, 0xED));
+
+    public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
+        => (value as string) == "done" ? Done : InProgress;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
+}
+
+public sealed class StatusCategoryToIconGlyphConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
+        => (value as string) == "done" ? "✓" : "⚡";
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotSupportedException();
+}

@@ -68,6 +68,7 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string? _jiraBaseUrl;
 
     // ---- Stats ----
+    [ObservableProperty] private int _statLoggedMinutes;
     [ObservableProperty] private string _statLogged = "0m";
     [ObservableProperty] private string _statTargetLabel = "";
     [ObservableProperty] private int _statTargetPct;
@@ -81,6 +82,26 @@ public sealed partial class MainViewModel : ObservableObject
     [ObservableProperty] private string _selectedDate = WorkDate.Today();
     [ObservableProperty] private string _selectedDateLabel = "";
     public ObservableCollection<string> Dates { get; } = new();
+
+    // Decorative only, never a data claim - picked deterministically from the selected date
+    // (same hash-and-mod trick the Python build used) so it doesn't flicker to a different line
+    // on every re-render of the same day.
+    private static readonly string[] Quotes =
+    {
+        "Small steps make big progress.",
+        "Consistent progress beats perfect days.",
+        "Every logged minute is a step forward.",
+        "Focus on today's ticket, not the whole backlog.",
+        "Shipped is better than perfect.",
+    };
+    [ObservableProperty] private string _dailyQuote = Quotes[0];
+
+    private static string QuoteFor(string dateKey)
+    {
+        uint h = 0;
+        foreach (var ch in dateKey) h = h * 31 + ch;
+        return Quotes[h % Quotes.Length];
+    }
 
     // ---- Collections ----
     public ObservableCollection<TicketRowViewModel> Tickets { get; } = new();
@@ -187,12 +208,14 @@ public sealed partial class MainViewModel : ObservableObject
         SyncedAt = "Last synced " + data.SyncedAt;
         SelectedDate = data.SelectedDate;
         SelectedDateLabel = data.SelectedDateLabel;
+        DailyQuote = QuoteFor(data.SelectedDate);
         JiraBaseUrl = data.JiraBaseUrl;
 
         Dates.Clear();
         foreach (var d in data.Dates) Dates.Add(d);
 
         var s = data.Stats;
+        StatLoggedMinutes = s.LoggedMinutes;
         StatLogged = s.Logged;
         StatTargetLabel = $"Daily target: {s.DailyTargetMinutes / 60}h";
         StatTargetPct = s.TargetPct;

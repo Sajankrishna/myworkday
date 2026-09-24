@@ -25,12 +25,17 @@
 
             <conv:StatusCategoryToBrushConverter x:Key="StatusCategoryToBrush"/>
             <conv:StatusCategoryToForegroundConverter x:Key="StatusCategoryToForeground"/>
+            <conv:StatusCategoryToIconBackgroundConverter x:Key="StatusCategoryToIconBackground"/>
+            <conv:StatusCategoryToIconForegroundConverter x:Key="StatusCategoryToIconForeground"/>
+            <conv:StatusCategoryToIconGlyphConverter x:Key="StatusCategoryToIconGlyph"/>
             <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
             <conv:NullToVisibilityConverter x:Key="NullToVis"/>
             <conv:ZeroToVisibilityConverter x:Key="ZeroToVis"/>
             <conv:DateKeyToLabelConverter x:Key="DateKeyToLabel"/>
             <conv:ActivityKindToBrushConverter x:Key="ActivityKindToBrush"/>
             <conv:StrengthPctToBrushConverter x:Key="StrengthPctToBrush"/>
+            <conv:IndexToPaletteBrushConverter x:Key="IndexToPaletteBrush"/>
+            <conv:NeedsLoggingCountToLabelConverter x:Key="NeedsLoggingCountToLabel"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
             <Style x:Key="CardStyle" TargetType="Border">
@@ -98,6 +103,34 @@
                 <Setter Property="Background" Value="{StaticResource BlueWash}"/>
                 <Setter Property="Foreground" Value="{StaticResource Blue}"/>
                 <Setter Property="BorderThickness" Value="0"/>
+            </Style>
+
+            <!-- Round icon-only button, matching the top bar's rescan/settings buttons in the
+                 Python build (a plain white circle with a centered glyph, no visible border). -->
+            <Style x:Key="IconButton" TargetType="Button">
+                <Setter Property="Width" Value="40"/>
+                <Setter Property="Height" Value="40"/>
+                <Setter Property="Background" Value="{StaticResource CardBg}"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Shell" Background="{TemplateBinding Background}" CornerRadius="12">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#000000" Opacity="0.08" BlurRadius="8" ShadowDepth="1" Direction="270"/>
+                                </Border.Effect>
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Shell" Property="Background" Value="#F9FAFB"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
 
             <!-- ============================================================

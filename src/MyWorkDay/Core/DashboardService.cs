@@ -142,7 +142,13 @@ public sealed class DashboardService
             var label = r.Status ?? "No status";
             catMins[label] = catMins.GetValueOrDefault(label) + r.LoggedMinutes;
         }
-        var donut = catMins.Select(kv => new DonutSlice { Label = kv.Key, Minutes = kv.Value })
+        var donutTotal = catMins.Values.Sum();
+        var donut = catMins.Select(kv => new DonutSlice
+            {
+                Label = kv.Key,
+                Minutes = kv.Value,
+                Pct = donutTotal > 0 ? (int)Math.Round(100.0 * kv.Value / donutTotal) : 0,
+            })
             .OrderByDescending(d => d.Minutes).Take(8).ToList();
 
         var dates = new List<string> { today };

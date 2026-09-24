@@ -53,6 +53,7 @@ public sealed class DonutSlice
 {
     public string Label { get; init; } = "";
     public int Minutes { get; init; }
+    public int Pct { get; init; }
 }
 
 public sealed class DashboardStats
