@@ -93,10 +93,11 @@
                 <Setter Property="Foreground" Value="{StaticResource Muted}"/>
             </Style>
 
+            <!-- Just colored text, no badge/chip background - the wrapping Border is kept as a
+                 no-op (transparent, no padding) so every existing "Style=StatusPill" usage site
+                 doesn't need its own XAML edit. -->
             <Style x:Key="StatusPill" TargetType="Border">
-                <Setter Property="CornerRadius" Value="999"/>
-                <Setter Property="Padding" Value="8,2"/>
-                <Setter Property="Background" Value="{Binding StatusCategory, Converter={StaticResource StatusCategoryToBrush}}"/>
+                <Setter Property="Background" Value="Transparent"/>
             </Style>
 
             <Style x:Key="StatusPillText" TargetType="TextBlock">
