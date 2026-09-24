@@ -81,9 +81,21 @@
 
                 <Separator Margin="0,12,0,12"/>
 
-                <TextBlock Text="Also track comments on" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
+                <TextBlock Text="Comment scan (recommended)" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
                 <TextBlock TextWrapping="Wrap" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="0,0,0,6">
-                    My Work only finds comments on tickets assigned to or reported by you - a comment on a teammate's ticket won't show up otherwise. List ticket keys here (comma-separated) to also check those.
+                    Set your Jira project key (e.g. CAD) to find your comments on ANY ticket in that project for the selected day - not just tickets assigned to or reported by you. Fast: one project, one day.
+                </TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                    <TextBox Text="{Binding ProjectKey, UpdateSourceTrigger=PropertyChanged}" Width="100" Padding="7" Margin="0,0,8,0" CharacterCasing="Upper"/>
+                    <Button Style="{StaticResource ActionButton}" Content="Save" Command="{Binding SaveProjectKeyCommand}"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ProjectKeyStatusMessage}" FontSize="11.5" Foreground="{StaticResource Green}" Margin="0,0,0,4" TextWrapping="Wrap"/>
+
+                <Separator Margin="0,8,0,12"/>
+
+                <TextBlock Text="Also track comments on (fallback)" FontWeight="Bold" FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,6"/>
+                <TextBlock TextWrapping="Wrap" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="0,0,0,6">
+                    Without a project key above, My Work only finds comments on tickets assigned to or reported by you. List specific ticket keys here (comma-separated) as a manual fallback - a comment outside your project, for example.
                 </TextBlock>
                 <TextBox Text="{Binding WatchedTickets, UpdateSourceTrigger=PropertyChanged}" Padding="7" Margin="0,0,0,6"
                          TextWrapping="Wrap" AcceptsReturn="True" MinHeight="44"/>

@@ -41,6 +41,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _watchedTickets = "";
     [ObservableProperty] private string _watchedTicketsStatusMessage = "";
 
+    // Whole-project, single-day comment scan (see GetProjectDayCommentsAsync) - finds a
+    // comment on ANY ticket in the project, not just your own, without needing WatchedTickets.
+    [ObservableProperty] private string _projectKey = "";
+    [ObservableProperty] private string _projectKeyStatusMessage = "";
+
     [ObservableProperty] private bool _isBusy;
 
     public event Action? SettingsChanged;
@@ -64,6 +69,7 @@ public sealed partial class SettingsViewModel : ObservableObject
 
         BreakReminderMins = cfg.BreakReminderMins ?? 120;
         WatchedTickets = string.Join(", ", cfg.WatchedTickets);
+        ProjectKey = cfg.ProjectKey ?? "";
     }
 
     [RelayCommand]
@@ -156,6 +162,20 @@ public sealed partial class SettingsViewModel : ObservableObject
         _config.Save(cfg);
         WatchedTickets = string.Join(", ", keys);
         WatchedTicketsStatusMessage = keys.Count > 0 ? $"✓ Saved ({keys.Count} ticket(s))" : "✓ Saved (none)";
+        SettingsChanged?.Invoke();
+    }
+
+    [RelayCommand]
+    private void SaveProjectKey()
+    {
+        var key = ProjectKey.Trim().ToUpperInvariant();
+        var cfg = _config.Load();
+        cfg.ProjectKey = string.IsNullOrWhiteSpace(key) ? null : key;
+        _config.Save(cfg);
+        ProjectKey = key;
+        ProjectKeyStatusMessage = string.IsNullOrWhiteSpace(key)
+            ? "✓ Saved - back to assignee/reporter + watched tickets only"
+            : $"✓ Saved - My Work now scans all of {key} for your comments";
         SettingsChanged?.Invoke();
     }
 

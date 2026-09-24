@@ -62,17 +62,36 @@ public sealed class DashboardService
 
                 if (_accountId != null)
                 {
-                    var commentedRows = await _jira.GetCommentedRowsAsync(_accountId, CommentLookbackDays, cfg.WatchedTickets);
+                    // PROJECT_KEY configured -> a whole-project, single-day comment scan
+                    // (finds a comment on ANY ticket in the project, not just your own),
+                    // confirmed practical at real-world scale. Otherwise fall back to the
+                    // narrower assignee/reporter + explicitly-watched-tickets search.
+                    Dictionary<string, TicketDayRow> commentedRows;
+                    bool alreadyDayScoped;
+                    if (!string.IsNullOrWhiteSpace(cfg.ProjectKey))
+                    {
+                        commentedRows = await _jira.GetProjectDayCommentsAsync(cfg.ProjectKey, _accountId, dateKey);
+                        alreadyDayScoped = true;
+                    }
+                    else
+                    {
+                        commentedRows = await _jira.GetCommentedRowsAsync(_accountId, CommentLookbackDays, cfg.WatchedTickets);
+                        alreadyDayScoped = false;
+                    }
+
                     foreach (var (key, commentRow) in commentedRows)
                     {
-                        // Only merge in this ticket's comments that actually fall on the
-                        // selected day - GetCommentedRowsAsync returns the whole lookback
-                        // window's comments so a single fetch can serve every date jump.
-                        var todaysComments = commentRow.Actions.Where(a => WorkDate.KeyFor(a.Timestamp) == dateKey).ToList();
-                        if (todaysComments.Count == 0) continue;
+                        // GetCommentedRowsAsync returns the whole lookback window's comments
+                        // (one fetch serves every date jump), so only merge in the ones that
+                        // actually fall on the selected day. GetProjectDayCommentsAsync is
+                        // already scoped to exactly this day.
+                        var dayComments = alreadyDayScoped
+                            ? commentRow.Actions
+                            : commentRow.Actions.Where(a => WorkDate.KeyFor(a.Timestamp) == dateKey).ToList();
+                        if (dayComments.Count == 0) continue;
                         if (rows.TryGetValue(key, out var existing))
                         {
-                            var merged = existing.Actions.Concat(todaysComments).OrderBy(a => a.Timestamp).ToList();
+                            var merged = existing.Actions.Concat(dayComments).OrderBy(a => a.Timestamp).ToList();
                             rows[key] = new TicketDayRow
                             {
                                 Key = existing.Key,
@@ -96,7 +115,7 @@ public sealed class DashboardService
                                 LoggedMinutes = 0,
                                 ExpectedMinutes = commentRow.ExpectedMinutes,
                                 JiraUrl = commentRow.JiraUrl,
-                                Actions = todaysComments,
+                                Actions = dayComments,
                             };
                         }
                     }

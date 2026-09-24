@@ -1,6 +1,18 @@
 using MyWorkDay.Core;
 using MyWorkDay.ViewModels;
 
+// One-time: set PROJECT_KEY=CAD so DashboardService uses the new whole-project day-scan
+// instead of the narrower assignee/reporter + watched-tickets fallback.
+{
+    var seedConfig = new ConfigService();
+    var seedCfg = seedConfig.Load();
+    if (string.IsNullOrWhiteSpace(seedCfg.ProjectKey))
+    {
+        seedCfg.ProjectKey = "CAD";
+        seedConfig.Save(seedCfg);
+    }
+}
+
 var config = new ConfigService();
 var errorLog = new ErrorLogService(config);
 var jira = new JiraService(config, errorLog);
@@ -231,6 +243,58 @@ Console.WriteLine("== Scanning Bryan Ponce's tickets specifically (not on the te
         cfgRaw.WatchedTickets.AddRange(toAdd);
         config.Save(cfgRaw);
         Console.WriteLine($"Added to WATCHED_TICKETS: {string.Join(", ", toAdd)}");
+    }
+}
+
+Console.WriteLine();
+Console.WriteLine("== Measuring true scale: how many CAD tickets updated since start of today? ==");
+{
+    var cfgRaw = config.Load();
+    using var http = new System.Net.Http.HttpClient();
+    var auth = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{cfgRaw.JiraEmail}:{cfgRaw.JiraApiToken}"));
+    var jql = "project = \"CAD\" AND updated >= startOfDay(\"-4h\")"; // Eastern is UTC-4 right now
+    var allKeys = new List<string>();
+    string? token = null;
+    var sw = System.Diagnostics.Stopwatch.StartNew();
+    while (true)
+    {
+        var bodyObj = new Dictionary<string, object?> { ["jql"] = jql, ["fields"] = new[] { "summary" }, ["maxResults"] = 100 };
+        if (token != null) bodyObj["nextPageToken"] = token;
+        var body = System.Text.Json.JsonSerializer.Serialize(bodyObj);
+        using var req = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Post, cfgRaw.JiraBaseUrl!.TrimEnd('/') + "/rest/api/3/search/jql");
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+        req.Content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json");
+        using var resp = await http.SendAsync(req);
+        if (!resp.IsSuccessStatusCode) { Console.WriteLine($"HTTP {(int)resp.StatusCode}: {await resp.Content.ReadAsStringAsync()}"); break; }
+        var doc = System.Text.Json.JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+        allKeys.AddRange(doc.RootElement.GetProperty("issues").EnumerateArray().Select(i => i.GetProperty("key").GetString()!));
+        var isLast = doc.RootElement.GetProperty("isLast").GetBoolean();
+        if (isLast) break;
+        token = doc.RootElement.TryGetProperty("nextPageToken", out var t) ? t.GetString() : null;
+        if (token == null) break;
+        if (allKeys.Count > 500) { Console.WriteLine("(stopping pagination at 500+, clearly too many)"); break; }
+    }
+    Console.WriteLine($"Total CAD tickets updated since start of today: {allKeys.Count} (query took {sw.ElapsedMilliseconds}ms)");
+
+    if (allKeys.Count > 0 && allKeys.Count <= 200)
+    {
+        sw.Restart();
+        var myTodayHits = new System.Collections.Concurrent.ConcurrentBag<string>();
+        await Parallel.ForEachAsync(allKeys, new ParallelOptions { MaxDegreeOfParallelism = 16 }, async (key, ct) =>
+        {
+            using var creq = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get,
+                cfgRaw.JiraBaseUrl!.TrimEnd('/') + $"/rest/api/3/issue/{key}/comment?maxResults=100&orderBy=-created");
+            creq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", auth);
+            using var cresp = await http.SendAsync(creq, ct);
+            if (!cresp.IsSuccessStatusCode) return;
+            var cdoc = System.Text.Json.JsonDocument.Parse(await cresp.Content.ReadAsStringAsync(ct));
+            var hasMineToday = cdoc.RootElement.GetProperty("comments").EnumerateArray()
+                .Where(c => c.GetProperty("author").GetProperty("accountId").GetString() == myAccountId)
+                .Select(c => DateTimeOffset.Parse(c.GetProperty("created").GetString()!))
+                .Any(ts => WorkDate.KeyFor(ts) == WorkDate.Today());
+            if (hasMineToday) myTodayHits.Add(key);
+        });
+        Console.WriteLine($"Checked all {allKeys.Count} tickets' comments in {sw.ElapsedMilliseconds}ms - my comments today on: {string.Join(", ", myTodayHits)}");
     }
 }
 

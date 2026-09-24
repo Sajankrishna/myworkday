@@ -35,13 +35,21 @@ public sealed class AppConfig
     public List<TeamMemberConfig> TeamMembers { get; set; } = new();
 
     // Extra ticket keys to check for your own comments even when you're neither assignee nor
-    // reporter (e.g. commenting on a teammate's ticket) - GetCommentedRowsAsync's own JQL
-    // candidate search is scoped to assignee/reporter = you for a real reason (this Jira
-    // instance updates 100+ tickets a day; scanning every recently-updated ticket for your
-    // comments isn't practical), so this is the deliberate, bounded escape hatch: tickets you
-    // explicitly say to also watch.
+    // reporter (e.g. commenting on a teammate's ticket). Mostly superseded by PROJECT_KEY (a
+    // whole-project, single-day scan finds these automatically) but kept as a fallback for
+    // comments outside that project, or when no project key is configured.
     [JsonPropertyName("WATCHED_TICKETS")]
     public List<string> WatchedTickets { get; set; } = new();
+
+    // The Jira project to scan, whole-project, for your own comments on a given day
+    // (JiraService.GetProjectDayCommentsAsync) - finds a comment on ANY ticket in the project,
+    // not just ones you're assignee/reporter on or have explicitly watched. Confirmed practical
+    // at real-world scale: one calendar day of a busy project is ~80 tickets, checked in a few
+    // seconds via a throttled concurrent comment fetch - a whole-instance, multi-day scan is
+    // NOT practical (100+ tickets even within a single day), which is why this is scoped to
+    // one project and one day, not broader.
+    [JsonPropertyName("PROJECT_KEY")]
+    public string? ProjectKey { get; set; }
 
     [JsonIgnore]
     public bool JiraConnected => !string.IsNullOrWhiteSpace(JiraBaseUrl)

@@ -586,33 +586,126 @@ public sealed class JiraService
 
     private async Task<List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)>> SearchIssuesAsync(
         string baseUrl, string email, string token, string jql, string[] fields)
+        => await SearchIssuesPagedAsync(baseUrl, email, token, jql, fields, maxPages: 1);
+
+    /// <summary>Same search, but follows nextPageToken until Jira says isLast (or maxPages is
+    /// hit, a hard safety cap) - the single-page SearchIssuesAsync silently truncates at 100
+    /// results, which is fine for the narrow "my tickets" queries elsewhere but not for a
+    /// whole-project day-scan.</summary>
+    private async Task<List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)>> SearchIssuesPagedAsync(
+        string baseUrl, string email, string token, string jql, string[] fields, int maxPages = 10)
     {
-        var body = new JsonObject
-        {
-            ["jql"] = jql,
-            ["fields"] = new JsonArray(fields.Select(f => JsonValue.Create(f)!).ToArray()),
-            ["maxResults"] = 100,
-        };
-        using var req = NewRequest(HttpMethod.Post, baseUrl + "/rest/api/3/search/jql", email, token);
-        req.Content = JsonContent.Create(body);
-        using var resp = await _http.SendAsync(req);
-        if (!resp.IsSuccessStatusCode) return new();
-        var json = await resp.Content.ReadFromJsonAsync<JsonNode>();
         var outp = new List<(string, string, string?, string?, int?)>();
-        foreach (var issue in json?["issues"]?.AsArray() ?? new JsonArray())
+        string? pageToken = null;
+        for (var page = 0; page < maxPages; page++)
         {
-            if (issue is null) continue;
-            var key = issue["key"]!.GetValue<string>();
-            var f = issue["fields"];
-            var summary = f?["summary"]?.GetValue<string>() ?? "";
-            var status = f?["status"];
-            // Jira's own "Original Estimate" (timetracking.originalEstimateSeconds) - a real,
-            // manually-set field, when the requesting query asked for it. Never invented: a
-            // ticket nobody estimated in Jira simply has none here.
-            var estimateSecs = f?["timetracking"]?["originalEstimateSeconds"]?.GetValue<int?>();
-            int? expectedMinutes = estimateSecs.HasValue ? estimateSecs.Value / 60 : null;
-            outp.Add((key, summary, status?["name"]?.GetValue<string>(), status?["statusCategory"]?["key"]?.GetValue<string>(), expectedMinutes));
+            var body = new JsonObject
+            {
+                ["jql"] = jql,
+                ["fields"] = new JsonArray(fields.Select(f => JsonValue.Create(f)!).ToArray()),
+                ["maxResults"] = 100,
+            };
+            if (pageToken != null) body["nextPageToken"] = pageToken;
+
+            using var req = NewRequest(HttpMethod.Post, baseUrl + "/rest/api/3/search/jql", email, token);
+            req.Content = JsonContent.Create(body);
+            using var resp = await _http.SendAsync(req);
+            if (!resp.IsSuccessStatusCode) break;
+            var json = await resp.Content.ReadFromJsonAsync<JsonNode>();
+            foreach (var issue in json?["issues"]?.AsArray() ?? new JsonArray())
+            {
+                if (issue is null) continue;
+                var key = issue["key"]!.GetValue<string>();
+                var f = issue["fields"];
+                var summary = f?["summary"]?.GetValue<string>() ?? "";
+                var status = f?["status"];
+                // Jira's own "Original Estimate" (timetracking.originalEstimateSeconds) - a
+                // real, manually-set field, when the requesting query asked for it. Never
+                // invented: a ticket nobody estimated in Jira simply has none here.
+                var estimateSecs = f?["timetracking"]?["originalEstimateSeconds"]?.GetValue<int?>();
+                int? expectedMinutes = estimateSecs.HasValue ? estimateSecs.Value / 60 : null;
+                outp.Add((key, summary, status?["name"]?.GetValue<string>(), status?["statusCategory"]?["key"]?.GetValue<string>(), expectedMinutes));
+            }
+            if (json?["isLast"]?.GetValue<bool>() != false) break;
+            pageToken = json?["nextPageToken"]?.GetValue<string>();
+            if (pageToken is null) break;
         }
         return outp;
+    }
+
+    /// <summary>Every real comment you wrote on the given work-day, across the whole project -
+    /// not scoped to tickets you're assignee/reporter on (see WatchedTickets' own docs for why
+    /// that scoping exists elsewhere: an instance-wide "updated in the last N days" search is
+    /// far too large to check comment-by-comment). A single calendar day within one project is
+    /// small enough to be practical: confirmed live at 83 tickets / ~3.5s for a 16-way
+    /// concurrent comment fetch, well within what a dashboard refresh can afford. Requires
+    /// AppConfig.ProjectKey to be set (Settings) - without it this app has no way to know which
+    /// project(s) are "yours" to scan.</summary>
+    public async Task<Dictionary<string, TicketDayRow>> GetProjectDayCommentsAsync(string projectKey, string accountId, string dateKey)
+    {
+        var (b, e, t) = Creds();
+        var result = new Dictionary<string, TicketDayRow>();
+        if (b is null || e is null || t is null || string.IsNullOrWhiteSpace(projectKey)) return result;
+
+        var day = WorkDate.Parse(dateKey);
+        // A day's worth of real activity, widened a day either side for the 10pm-cutoff
+        // bucketing shift and for JQL's own date literals not necessarily matching Eastern
+        // exactly - comments are re-filtered to the precise work-day below regardless.
+        //
+        // Deliberately NOT "updated <= hi": `updated` is the ticket's single latest-touch
+        // timestamp, so a ticket genuinely commented on this day but touched again by anyone,
+        // for any reason, after `hi` would have an `updated` past the upper bound and be
+        // wrongly excluded - confirmed live (CAD-7096 disappeared from a past day's results
+        // this way once it picked up a later comment). `created <= hi` has no such problem:
+        // a ticket's creation date never changes, and "created by hi, touched since lo" is
+        // exactly "existed in time to have this day's comment, and has had some activity at
+        // or after the window starts" - true for any ticket with a real comment in [lo, hi].
+        var lo = day.AddDays(-1).ToString("yyyy-MM-dd");
+        var hi = day.AddDays(2).ToString("yyyy-MM-dd");
+        var jql = $"project = \"{projectKey}\" AND created <= \"{hi}\" AND updated >= \"{lo}\"";
+
+        List<(string Key, string Summary, string? Status, string? Category, int? ExpectedMinutes)> issues;
+        try
+        {
+            issues = await SearchIssuesPagedAsync(b, e, t, jql, new[] { "summary", "status", "timetracking" }, maxPages: 10);
+        }
+        catch (Exception ex)
+        {
+            _errorLog.Log("GetProjectDayCommentsAsync search failed", ex);
+            return result;
+        }
+
+        var since = day.AddDays(-1);
+        using var throttle = new SemaphoreSlim(16);
+        var tasks = issues.Select(async issue =>
+        {
+            await throttle.WaitAsync();
+            try
+            {
+                var comments = await FetchMyCommentsAsync(b, e, t, issue.Key, accountId, since);
+                var dayComments = comments.Where(c => WorkDate.KeyFor(c.Timestamp) == dateKey).ToList();
+                return (issue, dayComments);
+            }
+            finally
+            {
+                throttle.Release();
+            }
+        });
+        foreach (var (issue, comments) in await Task.WhenAll(tasks))
+        {
+            if (comments.Count == 0) continue;
+            result[issue.Key] = new TicketDayRow
+            {
+                Key = issue.Key,
+                Summary = issue.Summary,
+                Status = issue.Status,
+                StatusCategory = issue.Category,
+                LoggedMinutes = 0,
+                ExpectedMinutes = issue.ExpectedMinutes,
+                JiraUrl = b + "/browse/" + issue.Key,
+                Actions = comments,
+            };
+        }
+        return result;
     }
 }
