@@ -132,9 +132,19 @@
                             <StackPanel>
                                 <Grid Margin="0,0,0,8">
                                     <TextBlock Text="&#128203; My Work" Style="{StaticResource CardHeaderText}" VerticalAlignment="Center"/>
-                                    <ComboBox HorizontalAlignment="Right" Width="180"
-                                              ItemsSource="{Binding Dates}" SelectedItem="{Binding SelectedDate, Mode=OneWay}"
-                                              SelectionChanged="DateSelect_SelectionChanged"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <DatePicker x:Name="DateJumpPicker" Width="132" Margin="0,0,8,0" ToolTip="Jump to any date"
+                                                    SelectedDateChanged="DateJumpPicker_SelectedDateChanged"/>
+                                        <ComboBox x:Name="DateSelectCombo" Width="170"
+                                                  ItemsSource="{Binding Dates}" SelectedItem="{Binding SelectedDate, Mode=OneWay}"
+                                                  SelectionChanged="DateSelect_SelectionChanged">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Converter={StaticResource DateKeyToLabel}}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </StackPanel>
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                     <Button Style="{StaticResource GhostButton}" Content="&#128279; Open Jira" Click="OpenJira_Click" Margin="0,0,8,0"/>

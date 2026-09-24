@@ -28,6 +28,7 @@
             <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis"/>
             <conv:NullToVisibilityConverter x:Key="NullToVis"/>
             <conv:ZeroToVisibilityConverter x:Key="ZeroToVis"/>
+            <conv:DateKeyToLabelConverter x:Key="DateKeyToLabel"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
             <Style x:Key="CardStyle" TargetType="Border">
