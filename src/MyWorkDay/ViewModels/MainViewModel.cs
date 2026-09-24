@@ -213,6 +213,14 @@ public sealed partial class MainViewModel : ObservableObject
 
         Dates.Clear();
         foreach (var d in data.Dates) Dates.Add(d);
+        // Dates.Clear() just wiped the ComboBox's own SelectedItem to null - and since
+        // SelectedDate's setter above only raises PropertyChanged when the value actually
+        // differs (a refresh usually reloads the SAME date), that silent no-op means the
+        // OneWay-bound ComboBox never gets told to reselect anything, so it's left showing
+        // nothing even though the correct date is still right there in the rebuilt list.
+        // Force the notification unconditionally so the dropdown always re-picks the current
+        // date after every Dates rebuild, refresh or not.
+        OnPropertyChanged(nameof(SelectedDate));
 
         var s = data.Stats;
         StatLoggedMinutes = s.LoggedMinutes;
