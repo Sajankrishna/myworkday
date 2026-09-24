@@ -17,7 +17,8 @@
                             <StackPanel>
                                 <Grid>
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource Blue}"/>
+                                        <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource Blue}"
+                                                   Cursor="Hand" TextDecorations="Underline" Tag="{Binding JiraUrl}" MouseLeftButtonUp="TicketKey_Click"/>
                                         <Border Style="{StaticResource StatusPill}" Margin="8,0,0,0" Visibility="{Binding Status, Converter={StaticResource NullToVis}}">
                                             <TextBlock Text="{Binding Status}" Style="{StaticResource StatusPillText}"/>
                                         </Border>

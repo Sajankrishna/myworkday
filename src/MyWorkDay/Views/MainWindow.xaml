@@ -283,7 +283,8 @@
                                                                 </Path>
                                                             </Border>
                                                             <TextBlock Grid.Column="1" Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold"
-                                                                       FontSize="12" Foreground="{StaticResource Blue}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                                                       FontSize="12" Foreground="{StaticResource Blue}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                                                       Cursor="Hand" TextDecorations="Underline" Tag="{Binding JiraUrl}" MouseLeftButtonUp="TicketKey_Click"/>
                                                             <TextBlock Grid.Column="2" Text="{Binding Summary}" TextTrimming="CharacterEllipsis" Margin="8,0" VerticalAlignment="Center"/>
                                                             <Border Grid.Column="3" Style="{StaticResource StatusPill}" Margin="4,0" VerticalAlignment="Center"
                                                                     Visibility="{Binding Status, Converter={StaticResource NullToVis}}">
@@ -360,7 +361,8 @@
                                                 <StackPanel Grid.Column="2" Margin="0,0,0,10">
                                                     <TextBlock FontSize="12" TextWrapping="Wrap">
                                                         <Run Text="{Binding HeadlinePrefix, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
-                                                        <Run Text="{Binding Ticket, Mode=OneWay}" Foreground="{StaticResource Blue}" FontWeight="Bold"/>
+                                                        <Run Text="{Binding Ticket, Mode=OneWay}" Foreground="{StaticResource Blue}" FontWeight="Bold"
+                                                             TextDecorations="Underline" Cursor="Hand" MouseLeftButtonUp="ActivityTicket_Click"/>
                                                     </TextBlock>
                                                     <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
@@ -634,7 +636,8 @@
                                                                     <ColumnDefinition Width="*"/>
                                                                     <ColumnDefinition Width="Auto"/>
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBlock Grid.Column="0" Text="{Binding Key}" FontWeight="SemiBold" Foreground="{StaticResource Blue}" FontSize="11"/>
+                                                                <TextBlock Grid.Column="0" Text="{Binding Key}" FontWeight="SemiBold" Foreground="{StaticResource Blue}" FontSize="11"
+                                                                           Cursor="Hand" TextDecorations="Underline" Tag="{Binding JiraUrl}" MouseLeftButtonUp="TicketKey_Click"/>
                                                                 <TextBlock Grid.Column="1" Text="{Binding Summary}" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" Margin="4,0"/>
                                                                 <TextBlock Grid.Column="2" FontWeight="SemiBold" FontSize="11">
                                                                     <Run Text="{Binding Minutes, Mode=OneWay}"/>

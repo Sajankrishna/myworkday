@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using MyWorkDay.Core;
 using MyWorkDay.ViewModels;
 
 namespace MyWorkDay.Views;
@@ -78,13 +79,15 @@ public partial class MainWindow : Window
             MessageBox.Show("Connect Jira in Settings first.", "MyWorkDay", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
-        OpenUrl(_vm.JiraBaseUrl);
+        UrlOpener.Open(_vm.JiraBaseUrl);
     }
 
-    private static void OpenUrl(string url)
+    /// <summary>Every clickable ticket key (Tag = the row's JiraUrl) opens it in the browser -
+    /// e.Handled stops the click from also bubbling up to a parent row's own toggle handler.</summary>
+    private void TicketKey_Click(object sender, MouseButtonEventArgs e)
     {
-        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); }
-        catch { }
+        if (sender is FrameworkElement { Tag: string url }) UrlOpener.Open(url);
+        e.Handled = true;
     }
 
     private void OpenSettings_Click(object sender, RoutedEventArgs e)
@@ -135,6 +138,14 @@ public partial class MainWindow : Window
     private void TicketRow_Toggle(object sender, MouseButtonEventArgs e)
     {
         if (sender is FrameworkElement { DataContext: TicketRowViewModel row }) row.IsExpanded = !row.IsExpanded;
+    }
+
+    private void ActivityTicket_Click(object sender, MouseButtonEventArgs e)
+    {
+        // Run is a FrameworkContentElement, not a FrameworkElement, but it still inherits
+        // DataContext from its containing TextBlock the same way.
+        if (sender is FrameworkContentElement { DataContext: ActivityItemViewModel item }) UrlOpener.Open(item.JiraUrl);
+        e.Handled = true;
     }
 
     private void LogTime_Click(object sender, RoutedEventArgs e) => OpenLogTime(null);

@@ -546,7 +546,7 @@ public sealed class JiraService
         foreach (var (i, mins) in await Task.WhenAll(tasks))
         {
             if (mins <= 0) continue;
-            tickets.Add(new TeamMemberTicket { Key = i.Key, Summary = i.Summary, Status = i.Status, StatusCategory = i.Category, Minutes = mins });
+            tickets.Add(new TeamMemberTicket { Key = i.Key, Summary = i.Summary, Status = i.Status, StatusCategory = i.Category, Minutes = mins, JiraUrl = b + "/browse/" + i.Key });
         }
         tickets = tickets.OrderByDescending(x => x.Minutes).ToList();
         return (tickets, tickets.Sum(x => x.Minutes));

@@ -51,4 +51,10 @@ public partial class TeamWorklogWindow : Window
     {
         if (sender is FrameworkElement { DataContext: TeamMemberRowViewModel row }) row.IsExpanded = !row.IsExpanded;
     }
+
+    private void TicketKey_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string url }) UrlOpener.Open(url);
+        e.Handled = true;
+    }
 }

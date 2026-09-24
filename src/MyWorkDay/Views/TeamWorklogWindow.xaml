@@ -89,7 +89,8 @@
                                                             <ColumnDefinition Width="*"/>
                                                             <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Grid.Column="0" Text="{Binding Key}" FontWeight="SemiBold" Foreground="{StaticResource Blue}" FontSize="11.5"/>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Key}" FontWeight="SemiBold" Foreground="{StaticResource Blue}" FontSize="11.5"
+                                                                   Cursor="Hand" TextDecorations="Underline" Tag="{Binding JiraUrl}" MouseLeftButtonUp="TicketKey_Click"/>
                                                         <TextBlock Grid.Column="1" Text="{Binding Summary}" FontSize="11.5" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" Margin="6,0"/>
                                                         <TextBlock Grid.Column="2" FontWeight="SemiBold" FontSize="11.5">
                                                             <Run Text="{Binding Minutes, Mode=OneWay}"/>

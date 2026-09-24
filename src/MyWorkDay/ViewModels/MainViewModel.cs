@@ -240,7 +240,7 @@ public sealed partial class MainViewModel : ObservableObject
         foreach (var n in data.NeedsLogging) NeedsLogging.Add(n);
 
         Activity.Clear();
-        foreach (var (ticket, action) in data.Activity) Activity.Add(new ActivityItemViewModel(ticket, action));
+        foreach (var (ticket, action) in data.Activity) Activity.Add(new ActivityItemViewModel(ticket, action, data.JiraBaseUrl));
 
         Donut.Clear();
         foreach (var d in data.Donut) Donut.Add(d);
@@ -270,7 +270,13 @@ public sealed class ActivityItemViewModel
 {
     public string Ticket { get; }
     public TicketAction Action { get; }
-    public ActivityItemViewModel(string ticket, TicketAction action) { Ticket = ticket; Action = action; }
+    public string? JiraUrl { get; }
+    public ActivityItemViewModel(string ticket, TicketAction action, string? jiraBaseUrl)
+    {
+        Ticket = ticket;
+        Action = action;
+        JiraUrl = string.IsNullOrWhiteSpace(jiraBaseUrl) ? null : jiraBaseUrl.TrimEnd('/') + "/browse/" + ticket;
+    }
 
     public string Time => Action.TimeLabel;
     public string Kind => Action.KindLabel;

@@ -143,6 +143,7 @@ public sealed class TeamMemberTicket
     public string? Status { get; init; }
     public string? StatusCategory { get; init; }
     public int Minutes { get; init; }
+    public string? JiraUrl { get; init; }
 }
 
 public sealed class TeamMemberWorklog
