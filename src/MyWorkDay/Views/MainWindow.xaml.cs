@@ -103,6 +103,14 @@ public partial class MainWindow : Window
 
     private async void Refresh_Tile_Click(object sender, MouseButtonEventArgs e) => await _vm.RefreshCommand.ExecuteAsync(null);
 
+    private void ShowWeek_Click(object sender, RoutedEventArgs e) =>
+        MessageBox.Show($"Last 7 day(s): {_vm.StatWeekLogged} total, {_vm.StatWeekTickets} ticket touches.",
+            "MyWorkDay", MessageBoxButton.OK, MessageBoxImage.Information);
+
+    private void TimeHistory_Click(object sender, RoutedEventArgs e) =>
+        MessageBox.Show("Pick a day from the My Work date controls to see its history.",
+            "MyWorkDay", MessageBoxButton.OK, MessageBoxImage.Information);
+
     private void OpenTeamWindow_Click(object sender, MouseButtonEventArgs e)
     {
         // Shares MainViewModel.TeamVm rather than creating a fresh view model, so the popup

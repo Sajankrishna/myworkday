@@ -17,7 +17,8 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="&#9650;" FontSize="20" Foreground="{StaticResource Blue}" Margin="0,0,10,0"/>
+                        <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconBrand}" Stroke="{StaticResource Blue}"
+                              StrokeThickness="1.6" Width="22" Height="22" Margin="0,0,10,0"/>
                         <StackPanel>
                             <TextBlock Text="MyWorkDay" FontSize="17" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
                             <TextBlock Text="Track &#8226; Focus &#8226; Deliver" Style="{StaticResource MutedText}"/>
@@ -39,7 +40,8 @@
                         </Border>
                         <TextBlock Text="{Binding SyncedAt}" Style="{StaticResource MutedText}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <Button x:Name="RefreshButton" Command="{Binding RefreshCommand}"
-                                ToolTip="Rescan" Content="&#8635;" Margin="0,0,8,0" RenderTransformOrigin="0.5,0.5">
+                                ToolTip="Rescan" Margin="0,0,8,0" RenderTransformOrigin="0.5,0.5">
+                            <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconRefresh}" Stroke="{StaticResource Ink}" Width="16" Height="16"/>
                             <Button.RenderTransform>
                                 <RotateTransform x:Name="RefreshRotate" Angle="0"/>
                             </Button.RenderTransform>
@@ -63,7 +65,9 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Style="{StaticResource IconButton}" Click="OpenSettings_Click" ToolTip="Settings" Content="&#9881;"/>
+                        <Button Style="{StaticResource IconButton}" Click="OpenSettings_Click" ToolTip="Settings">
+                            <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconSettings}" Stroke="{StaticResource Ink}" Width="16" Height="16"/>
+                        </Button>
                     </StackPanel>
                 </Grid>
 
@@ -102,7 +106,8 @@
                     <Border Style="{StaticResource CardStyle}" Margin="0,0,6,0">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource GreenWash}" Margin="0,0,10,0">
-                                <TextBlock Text="&#9201;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconClock}" Stroke="{StaticResource Green}"
+                                      Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel>
                                 <TextBlock Text="{Binding StatLogged}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
@@ -116,7 +121,8 @@
                     <Border Style="{StaticResource CardStyle}" Margin="6,0,6,0">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource BlueWash}" Margin="0,0,10,0">
-                                <TextBlock Text="&#128203;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconDocument}" Stroke="{StaticResource Blue}"
+                                      Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel>
                                 <TextBlock Text="{Binding StatTicketsTouched}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
@@ -127,7 +133,8 @@
                     <Border Style="{StaticResource CardStyle}" Margin="6,0,6,0">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource PurpleWash}" Margin="0,0,10,0">
-                                <TextBlock Text="&#128172;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Path Data="{StaticResource IconBolt}" Fill="{StaticResource Purple}" Stretch="Uniform"
+                                      Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel>
                                 <TextBlock Text="{Binding StatCommentsMade}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
@@ -138,7 +145,8 @@
                     <Border Style="{StaticResource CardStyle}" Margin="6,0,0,0">
                         <StackPanel Orientation="Horizontal">
                             <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource OrangeWash}" Margin="0,0,10,0">
-                                <TextBlock Text="&#128194;" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconDocument}" Stroke="{StaticResource Orange}"
+                                      Width="19" Height="19" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <StackPanel>
                                 <TextBlock Text="{Binding StatOpenAssigned}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
@@ -161,7 +169,10 @@
                         <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
                             <StackPanel>
                                 <Grid Margin="0,0,0,8">
-                                    <TextBlock Text="&#128203; My Work" Style="{StaticResource CardHeaderText}" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconCalendar}" Stroke="{StaticResource Ink}" Width="15" Height="15" Margin="0,0,6,0"/>
+                                        <TextBlock Text="My Work" Style="{StaticResource CardHeaderText}"/>
+                                    </StackPanel>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                         <DatePicker x:Name="DateJumpPicker" Width="132" Margin="0,0,8,0" ToolTip="Jump to any date"
                                                     SelectedDateChanged="DateJumpPicker_SelectedDateChanged"/>
@@ -200,9 +211,25 @@
                                                             </Grid.ColumnDefinitions>
                                                             <Border Grid.Column="0" Width="26" Height="26" CornerRadius="8" HorizontalAlignment="Left"
                                                                     Background="{Binding StatusCategory, Converter={StaticResource StatusCategoryToIconBackground}}">
-                                                                <TextBlock Text="{Binding StatusCategory, Converter={StaticResource StatusCategoryToIconGlyph}}"
-                                                                           FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                                           Foreground="{Binding StatusCategory, Converter={StaticResource StatusCategoryToIconForeground}}"/>
+                                                                <Path Width="13" Height="13" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                    <Path.Style>
+                                                                        <Style TargetType="Path">
+                                                                            <Setter Property="Data" Value="{StaticResource IconBolt}"/>
+                                                                            <Setter Property="Fill" Value="{Binding StatusCategory, Converter={StaticResource StatusCategoryToIconForeground}}"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding StatusCategory}" Value="done">
+                                                                                    <Setter Property="Data" Value="{StaticResource IconCheckmark}"/>
+                                                                                    <Setter Property="Fill" Value="{x:Null}"/>
+                                                                                    <Setter Property="Stroke" Value="{Binding StatusCategory, Converter={StaticResource StatusCategoryToIconForeground}}"/>
+                                                                                    <Setter Property="StrokeThickness" Value="2.2"/>
+                                                                                    <Setter Property="StrokeStartLineCap" Value="Round"/>
+                                                                                    <Setter Property="StrokeEndLineCap" Value="Round"/>
+                                                                                    <Setter Property="StrokeLineJoin" Value="Round"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </Path.Style>
+                                                                </Path>
                                                             </Border>
                                                             <TextBlock Grid.Column="1" Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold"
                                                                        FontSize="12" Foreground="{StaticResource Blue}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
@@ -241,12 +268,17 @@
                                 </ItemsControl>
                                 <TextBlock Text="No tickets recorded for this day." Style="{StaticResource MutedText}" Margin="0,8,0,0"
                                            Visibility="{Binding Tickets.Count, Converter={StaticResource ZeroToVis}, ConverterParameter=Invert}"/>
+                                <TextBlock Text="View all work &#8594;" Foreground="{StaticResource Blue}" FontSize="11.5"
+                                           HorizontalAlignment="Right" Margin="0,8,0,0" Cursor="Hand" MouseLeftButtonUp="ShowWeek_Click"/>
                             </StackPanel>
                         </Border>
 
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
-                                <TextBlock Text="&#128200; Recent Activity" Style="{StaticResource CardHeaderText}" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconActivity}" Stroke="{StaticResource Ink}" Width="15" Height="15" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Recent Activity" Style="{StaticResource CardHeaderText}"/>
+                                </StackPanel>
                                 <ItemsControl ItemsSource="{Binding Activity}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -283,7 +315,10 @@
                     <StackPanel Grid.Column="2">
                         <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
                             <StackPanel>
-                                <TextBlock Text="&#128202; Time Breakdown" Style="{StaticResource CardHeaderText}" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconPieChart}" Stroke="{StaticResource Ink}" Width="15" Height="15" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Time Breakdown" Style="{StaticResource CardHeaderText}"/>
+                                </StackPanel>
                                 <StackPanel Orientation="Horizontal">
                                     <controls:DonutChart Slices="{Binding Donut}" TotalMinutes="{Binding StatLoggedMinutes}" Margin="0,0,16,0"/>
                                     <ItemsControl ItemsSource="{Binding Donut}" AlternationCount="8" VerticalAlignment="Center">
@@ -326,7 +361,15 @@
                         <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14"
                                 Visibility="{Binding CalendarEvents.Count, Converter={StaticResource ZeroToVis}}">
                             <StackPanel>
-                                <TextBlock Text="&#128197; Today's Agenda" Style="{StaticResource CardHeaderText}" Margin="0,0,0,8"/>
+                                <Grid Margin="0,0,0,8">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconCalendar}" Stroke="{StaticResource Ink}" Width="15" Height="15" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Today's Agenda" Style="{StaticResource CardHeaderText}"/>
+                                    </StackPanel>
+                                    <Border Background="{StaticResource BlueWash}" CornerRadius="999" Padding="10,3" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding CalendarEvents.Count, StringFormat='{}{0} events'}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Blue}"/>
+                                    </Border>
+                                </Grid>
                                 <ItemsControl ItemsSource="{Binding CalendarEvents}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
@@ -356,27 +399,72 @@
 
                         <Border Style="{StaticResource CardStyle}">
                             <StackPanel>
-                                <TextBlock Text="&#9889; Quick Actions" Style="{StaticResource CardHeaderText}" Margin="0,0,0,10"/>
-                                <UniformGrid Columns="2" Rows="1" Margin="0,0,0,10">
-                                    <Border Background="{StaticResource GreenWash}" CornerRadius="10" Padding="10,10" Margin="0,0,5,0" Cursor="Hand" MouseLeftButtonUp="Refresh_Tile_Click">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <Path Data="{StaticResource IconLightningFilled}" Fill="{StaticResource Ink}" Stretch="Uniform" Width="15" Height="15" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Quick Actions" Style="{StaticResource CardHeaderText}"/>
+                                </StackPanel>
+                                <UniformGrid Columns="2" Rows="2">
+                                    <Border Background="{StaticResource GreenWash}" CornerRadius="10" Padding="10,10" Margin="0,0,5,5" Cursor="Hand" MouseLeftButtonUp="Refresh_Tile_Click">
                                         <StackPanel>
-                                            <TextBlock Text="&#8635; Rescan Now" FontWeight="SemiBold" FontSize="12.5"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconRefresh}" Stroke="{StaticResource Ink}" Width="14" Height="14" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Rescan Now" FontWeight="SemiBold" FontSize="12.5"/>
+                                            </StackPanel>
                                             <TextBlock Text="Re-fetch from Jira" Style="{StaticResource MutedText}"/>
                                         </StackPanel>
                                     </Border>
-                                    <Border Background="{StaticResource BlueWash}" CornerRadius="10" Padding="10,10" Margin="5,0,0,0" Cursor="Hand" MouseLeftButtonUp="OpenJira_Click">
+                                    <Border Background="{StaticResource BlueWash}" CornerRadius="10" Padding="10,10" Margin="5,0,0,5" Cursor="Hand" MouseLeftButtonUp="OpenJira_Click">
                                         <StackPanel>
-                                            <TextBlock Text="&#128279; Open Jira" FontWeight="SemiBold" FontSize="12.5"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconExternalLink}" Stroke="{StaticResource Ink}" Width="14" Height="14" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Open Jira" FontWeight="SemiBold" FontSize="12.5"/>
+                                            </StackPanel>
                                             <TextBlock Text="In your browser" Style="{StaticResource MutedText}"/>
                                         </StackPanel>
                                     </Border>
-                                </UniformGrid>
-                                <Border Background="{StaticResource BlueWash}" CornerRadius="10" Padding="12,10" Cursor="Hand" MouseLeftButtonUp="OpenTeamWindow_Click">
-                                    <Grid>
+                                    <Border Background="{StaticResource PurpleWash}" CornerRadius="10" Padding="10,10" Margin="0,5,5,0" Cursor="Hand" MouseLeftButtonUp="TimeHistory_Click">
                                         <StackPanel>
-                                            <TextBlock Text="&#128101; Team Worklogs" FontWeight="SemiBold" FontSize="12.5" Foreground="#1E3A8A"/>
-                                            <TextBlock Text="Search &amp; track teammates' logged time" Style="{StaticResource MutedText}"/>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconClock}" Stroke="{StaticResource Ink}" Width="14" Height="14" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Time History" FontWeight="SemiBold" FontSize="12.5"/>
+                                            </StackPanel>
+                                            <TextBlock Text="Browse past days" Style="{StaticResource MutedText}"/>
                                         </StackPanel>
+                                    </Border>
+                                    <Border Background="{StaticResource OrangeWash}" CornerRadius="10" Padding="10,10" Margin="5,5,0,0" Cursor="Hand" MouseLeftButtonUp="OpenSettings_Click">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconSettings}" Stroke="{StaticResource Ink}" Width="14" Height="14" Margin="0,0,6,0"/>
+                                                <TextBlock Text="Settings" FontWeight="SemiBold" FontSize="12.5"/>
+                                            </StackPanel>
+                                            <TextBlock Text="Jira &amp; scan config" Style="{StaticResource MutedText}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+                                <Border Background="{StaticResource BlueWash}" CornerRadius="10" Padding="14,12" Margin="0,10,0,0" Cursor="Hand" MouseLeftButtonUp="ShowWeek_Click">
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconBarChart}" Stroke="#1E3A8A" Width="14" Height="14" Margin="0,0,8,0"/>
+                                            <StackPanel>
+                                                <TextBlock Text="Weekly Summary" FontWeight="SemiBold" FontSize="12.5" Foreground="#1E3A8A"/>
+                                                <TextBlock Text="View your last 7 days total" Style="{StaticResource MutedText}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconChevronRight}" Stroke="{StaticResource Blue}"
+                                              Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                                <Border Background="{StaticResource BlueWash}" CornerRadius="10" Padding="14,12" Margin="0,8,0,0" Cursor="Hand" MouseLeftButtonUp="OpenTeamWindow_Click">
+                                    <Grid>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconPeople}" Stroke="#1E3A8A" Width="14" Height="14" Margin="0,0,8,0"/>
+                                            <StackPanel>
+                                                <TextBlock Text="Team Worklogs" FontWeight="SemiBold" FontSize="12.5" Foreground="#1E3A8A"/>
+                                                <TextBlock Text="Search &amp; track teammates' logged time" Style="{StaticResource MutedText}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconChevronRight}" Stroke="{StaticResource Blue}"
+                                              Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
                             </StackPanel>
@@ -390,7 +478,10 @@
                                 Visibility="{Binding HasRoster, Converter={StaticResource BoolToVis}}">
                             <StackPanel>
                                 <Grid Margin="0,0,0,8">
-                                    <TextBlock Text="&#128101; Team Worklog" Style="{StaticResource CardHeaderText}" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconPeople}" Stroke="{StaticResource Ink}" Width="15" Height="15" Margin="0,0,6,0"/>
+                                        <TextBlock Text="Team Worklog" Style="{StaticResource CardHeaderText}"/>
+                                    </StackPanel>
                                     <DatePicker x:Name="TeamDatePicker" HorizontalAlignment="Right" Width="132"
                                                 Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVis}}"
                                                 SelectedDateChanged="TeamDatePicker_SelectedDateChanged"/>
