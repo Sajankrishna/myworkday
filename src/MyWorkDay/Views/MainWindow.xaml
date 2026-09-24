@@ -216,14 +216,19 @@
                                             <Grid Margin="0,0,0,10">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="56"/>
+                                                    <ColumnDefinition Width="14"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Grid.Column="0" Text="{Binding Time}" FontSize="10.5" Foreground="{StaticResource Muted}"/>
-                                                <StackPanel Grid.Column="1">
+                                                <TextBlock Grid.Column="0" Text="{Binding Time}" FontSize="10.5" Foreground="{StaticResource Muted}" VerticalAlignment="Top" Margin="0,2,0,0"/>
+                                                <Ellipse Grid.Column="1" Width="7" Height="7" VerticalAlignment="Top" Margin="0,4,0,0"
+                                                         Fill="{Binding KindKey, Converter={StaticResource ActivityKindToBrush}}"/>
+                                                <StackPanel Grid.Column="2">
                                                     <TextBlock FontSize="12">
                                                         <Run Text="{Binding Kind, Mode=OneWay}" FontWeight="Bold"/>
                                                         <Run Text=" on "/>
                                                         <Run Text="{Binding Ticket, Mode=OneWay}" Foreground="{StaticResource Blue}" FontWeight="Bold"/>
+                                                        <Run Text=" "/>
+                                                        <Run Text="{Binding MinutesLabel, Mode=OneWay}" Foreground="{StaticResource Muted}"/>
                                                     </TextBlock>
                                                     <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
@@ -231,6 +236,8 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                                <TextBlock Text="No activity recorded for this day." Style="{StaticResource MutedText}" Margin="0,4,0,0"
+                                           Visibility="{Binding Activity.Count, Converter={StaticResource ZeroToVis}, ConverterParameter=Invert}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -315,6 +322,77 @@
                                         </StackPanel>
                                     </Grid>
                                 </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Team Worklog summary - only shown once a roster exists (see
+                             TeamWorklogViewModel.CheckRoster, a cheap local-config check, no
+                             network), same as the Python build's checkTeamRoster(). -->
+                        <Border Style="{StaticResource CardStyle}" Margin="0,14,0,0"
+                                DataContext="{Binding TeamVm}"
+                                Visibility="{Binding HasRoster, Converter={StaticResource BoolToVis}}">
+                            <StackPanel>
+                                <Grid Margin="0,0,0,8">
+                                    <TextBlock Text="&#128101; Team Worklog" Style="{StaticResource CardHeaderText}" VerticalAlignment="Center"/>
+                                    <DatePicker x:Name="TeamDatePicker" HorizontalAlignment="Right" Width="132"
+                                                Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVis}}"
+                                                SelectedDateChanged="TeamDatePicker_SelectedDateChanged"/>
+                                </Grid>
+
+                                <StackPanel HorizontalAlignment="Center" Margin="0,6,0,4"
+                                            Visibility="{Binding IsLoaded, Converter={StaticResource InverseBoolToVis}}">
+                                    <TextBlock Text="See what your team logged, ticket by ticket." Style="{StaticResource MutedText}" HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                    <Button Style="{StaticResource GhostButton}" Content="Load team worklog" Command="{Binding LoadCommand}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+
+                                <ItemsControl ItemsSource="{Binding Members}" Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVis}}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,0,0,10">
+                                                <Grid Cursor="Hand" MouseLeftButtonUp="TeamMemberRow_Toggle">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="26"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Width="24" Height="24" CornerRadius="12" Background="{StaticResource PurpleWash}">
+                                                        <TextBlock Text="{Binding Initials}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource Purple}"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="12.5" FontWeight="SemiBold"
+                                                               VerticalAlignment="Center" Margin="8,0" TextTrimming="CharacterEllipsis"/>
+                                                    <TextBlock Grid.Column="2" Text="{Binding TotalLabel}" FontSize="12.5" FontWeight="Bold" Foreground="{StaticResource Blue}" VerticalAlignment="Center"/>
+                                                </Grid>
+                                                <ProgressBar Value="{Binding StrengthPct, Mode=OneWay}" Maximum="100" Height="5" Margin="32,5,0,0"
+                                                             Background="{StaticResource Line}" BorderThickness="0"
+                                                             Foreground="{Binding StrengthPct, Converter={StaticResource StrengthPctToBrush}}"/>
+                                                <ItemsControl ItemsSource="{Binding Tickets}" Margin="32,6,0,0"
+                                                              Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,2">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="66"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" Text="{Binding Key}" FontWeight="SemiBold" Foreground="{StaticResource Blue}" FontSize="11"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding Summary}" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" Margin="4,0"/>
+                                                                <TextBlock Grid.Column="2" FontWeight="SemiBold" FontSize="11">
+                                                                    <Run Text="{Binding Minutes, Mode=OneWay}"/>
+                                                                    <Run Text="m"/>
+                                                                </TextBlock>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="Open full Team Worklogs window &#8594;" Foreground="{StaticResource Blue}" FontSize="11.5"
+                                           HorizontalAlignment="Right" Margin="0,4,0,0" Cursor="Hand" MouseLeftButtonUp="OpenTeamWindow_Click"
+                                           Visibility="{Binding IsLoaded, Converter={StaticResource BoolToVis}}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

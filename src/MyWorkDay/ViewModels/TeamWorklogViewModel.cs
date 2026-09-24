@@ -20,6 +20,17 @@ public sealed partial class TeamMemberRowViewModel : ObservableObject
     public string Email => Member.Email;
     public string Initials => string.Concat(DisplayName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpper(w[0])));
     public string TotalLabel => DashboardStats.FormatMinutes(TotalMinutes);
+
+    // Traffic-light coding for how much of a full day is logged - same thresholds as the
+    // Python build's strengthClass(): red = barely started, orange = partway, green = a full
+    // (or fuller) day's worth.
+    public int StrengthPct => Math.Max(0, Math.Min(100, (int)Math.Round(100.0 * TotalMinutes / DashboardService.DailyTargetMinutes)));
+
+    partial void OnTotalMinutesChanged(int value)
+    {
+        OnPropertyChanged(nameof(StrengthPct));
+        OnPropertyChanged(nameof(TotalLabel));
+    }
 }
 
 public sealed partial class TeamWorklogViewModel : ObservableObject
@@ -38,13 +49,32 @@ public sealed partial class TeamWorklogViewModel : ObservableObject
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string _searchQuery = "";
 
+    // Two-stage load, same as the Python build's checkTeamRoster()/loadTeamWorklogNow(): a
+    // cheap local config read reveals whether the embedded dashboard card should show at all
+    // (HasRoster), without touching the network. The real per-account Jira lookups only run
+    // once IsLoaded is explicitly requested (button click, date change, or the popup window
+    // opening), so they can never slow down or fail the core dashboard load.
+    [ObservableProperty] private bool _hasRoster;
+    [ObservableProperty] private bool _isLoaded;
+
     public ObservableCollection<TeamMemberRowViewModel> Members { get; } = new();
     public ObservableCollection<JiraUserSearchResult> SearchResults { get; } = new();
 
+    /// <summary>Cheap, no-network check of whether a team roster is configured at all - safe
+    /// to call on every dashboard refresh.</summary>
+    public void CheckRoster()
+    {
+        HasRoster = _config.Load().TeamMembers.Count > 0;
+        DateLabel = WorkDate.Parse(SelectedDate).ToString("ddd, MMM d, yyyy");
+    }
+
+    [RelayCommand]
     public async Task LoadAsync()
     {
         var cfg = _config.Load();
+        HasRoster = cfg.TeamMembers.Count > 0;
         await RefreshAsync(cfg);
+        IsLoaded = true;
     }
 
     [RelayCommand]
@@ -67,7 +97,9 @@ public sealed partial class TeamWorklogViewModel : ObservableObject
         }
         SearchQuery = "";
         SearchResults.Clear();
+        HasRoster = true;
         await RefreshAsync(cfg);
+        IsLoaded = true;
     }
 
     [RelayCommand]
@@ -76,6 +108,7 @@ public sealed partial class TeamWorklogViewModel : ObservableObject
         var cfg = _config.Load();
         cfg.TeamMembers.RemoveAll(m => m.AccountId == row.Member.AccountId);
         _config.Save(cfg);
+        HasRoster = cfg.TeamMembers.Count > 0;
         await RefreshAsync(cfg);
     }
 

@@ -14,6 +14,9 @@ public partial class MainWindow : Window
     // DateJumpPicker_SelectedDateChanged and trigger a second, redundant date-change call.
     private bool _syncingDate;
 
+    // Same idea as _syncingDate, for the Team Worklog card's own date picker.
+    private bool _syncingTeamDate;
+
     public MainWindow(MainViewModel vm)
     {
         _vm = vm;
@@ -23,7 +26,12 @@ public partial class MainWindow : Window
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedDate)) SyncDateJumpPicker();
         };
+        _vm.TeamVm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(TeamWorklogViewModel.SelectedDate)) SyncTeamDatePicker();
+        };
         SyncDateJumpPicker();
+        SyncTeamDatePicker();
     }
 
     private void SyncDateJumpPicker()
@@ -33,6 +41,15 @@ public partial class MainWindow : Window
         _syncingDate = true;
         try { DateJumpPicker.SelectedDate = d; }
         finally { _syncingDate = false; }
+    }
+
+    private void SyncTeamDatePicker()
+    {
+        if (!DateTime.TryParseExact(_vm.TeamVm.SelectedDate, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var d))
+            return;
+        _syncingTeamDate = true;
+        try { TeamDatePicker.SelectedDate = d; }
+        finally { _syncingTeamDate = false; }
     }
 
     private async void DateSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -83,10 +100,23 @@ public partial class MainWindow : Window
 
     private void OpenTeamWindow_Click(object sender, MouseButtonEventArgs e)
     {
-        var teamVm = new TeamWorklogViewModel(App.Jira, App.Config);
-        var win = new TeamWorklogWindow(teamVm) { Owner = this };
+        // Shares MainViewModel.TeamVm rather than creating a fresh view model, so the popup
+        // window and the embedded dashboard card always agree on roster/date/loaded data.
+        var win = new TeamWorklogWindow(_vm.TeamVm) { Owner = this };
         win.Show();
-        _ = teamVm.LoadAsync();
+        if (!_vm.TeamVm.IsLoaded) _ = _vm.TeamVm.LoadCommand.ExecuteAsync(null);
+    }
+
+    private async void TeamDatePicker_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_syncingTeamDate || TeamDatePicker.SelectedDate is not { } date) return;
+        _vm.TeamVm.SelectedDate = date.ToString("yyyy-MM-dd");
+        await _vm.TeamVm.RefreshCurrentCommand.ExecuteAsync(null);
+    }
+
+    private void TeamMemberRow_Toggle(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: TeamMemberRowViewModel row }) row.IsExpanded = !row.IsExpanded;
     }
 
     private void TicketRow_Toggle(object sender, MouseButtonEventArgs e)

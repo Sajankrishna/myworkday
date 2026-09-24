@@ -52,6 +52,16 @@ minutes, team roster) are stored in `%LOCALAPPDATA%\MyWorkDay\config.json` - the
 JSON shape the original Python build used, in plaintext. Errors are logged to
 `%LOCALAPPDATA%\MyWorkDay\error.log`.
 
+## Headless verification
+
+`tools/headless-check` is a small console harness that exercises `DashboardService` and
+`TeamWorklogViewModel` directly against your real, already-saved Jira credentials - no WPF
+window needed. Useful for verifying real data end-to-end without a GUI automation layer.
+
+```powershell
+dotnet run --project tools/headless-check
+```
+
 ## Architecture
 
 - `Core/` - services with no UI dependency: `JiraService` (all REST calls), `DashboardService`

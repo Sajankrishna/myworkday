@@ -29,6 +29,8 @@
             <conv:NullToVisibilityConverter x:Key="NullToVis"/>
             <conv:ZeroToVisibilityConverter x:Key="ZeroToVis"/>
             <conv:DateKeyToLabelConverter x:Key="DateKeyToLabel"/>
+            <conv:ActivityKindToBrushConverter x:Key="ActivityKindToBrush"/>
+            <conv:StrengthPctToBrushConverter x:Key="StrengthPctToBrush"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
             <Style x:Key="CardStyle" TargetType="Border">

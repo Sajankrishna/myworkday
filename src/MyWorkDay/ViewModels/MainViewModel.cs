@@ -15,8 +15,15 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly ErrorLogService _errorLog;
     private readonly BreakReminderService _breakReminder;
     private readonly DispatcherTimer _autoRefreshTimer;
+    private readonly DispatcherTimer _teamAutoRefreshTimer;
 
     private DashboardData? _lastData;
+
+    /// <summary>Shared with the Team Worklogs popup window (MainWindow passes this same
+    /// instance to it) so the embedded dashboard card and the full window never disagree about
+    /// roster or the currently loaded date - one source of truth, same as the Python build's
+    /// single get_team_worklogs() backend state.</summary>
+    public TeamWorklogViewModel TeamVm { get; }
 
     public MainViewModel(
         DashboardService dashboard,
@@ -33,10 +40,15 @@ public sealed partial class MainViewModel : ObservableObject
         _errorLog = errorLog;
         _breakReminder = breakReminder;
         _breakReminder.StatusChanged += OnBreakStatusChanged;
+        TeamVm = new TeamWorklogViewModel(jira, config);
 
-        // Mirrors the Python build's 5-minute auto-refresh for the main dashboard.
+        // Mirrors the Python build's 5-minute auto-refresh for the main dashboard, and its
+        // longer 15-minute cadence for team worklogs (real per-teammate Jira lookups, more
+        // expensive than the core refresh).
         _autoRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
         _autoRefreshTimer.Tick += async (_, _) => { if (!IsBusy) await RefreshAsync(); };
+        _teamAutoRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(15) };
+        _teamAutoRefreshTimer.Tick += async (_, _) => { if (TeamVm.IsLoaded && !TeamVm.IsBusy) await TeamVm.RefreshCurrentCommand.ExecuteAsync(null); };
     }
 
     // ---- Header / greeting ----
@@ -85,6 +97,7 @@ public sealed partial class MainViewModel : ObservableObject
         _breakReminder.ReminderMinutes = cfg.BreakReminderMins ?? 120;
         _breakReminder.Start();
         _autoRefreshTimer.Start();
+        _teamAutoRefreshTimer.Start();
         await RefreshAsync();
         await SyncCalendarAsync();
     }
@@ -200,6 +213,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         Donut.Clear();
         foreach (var d in data.Donut) Donut.Add(d);
+
+        TeamVm.CheckRoster();
     }
 
     private static string GreetingFor(int hour) => hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
@@ -228,6 +243,7 @@ public sealed class ActivityItemViewModel
 
     public string Time => Action.TimeLabel;
     public string Kind => Action.KindLabel;
+    public string KindKey => Action.Kind; // "worklog" | "comment" - drives the timeline dot color
     public string Message => Action.Message;
     public string? MinutesLabel => Action.Minutes > 0 ? DashboardStats.FormatMinutes(Action.Minutes) : null;
 }
