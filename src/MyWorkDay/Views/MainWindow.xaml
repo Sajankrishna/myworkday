@@ -5,7 +5,8 @@
         xmlns:controls="clr-namespace:MyWorkDay.Controls"
         Title="MyWorkDay" Height="880" Width="1180" MinHeight="600" MinWidth="820"
         Background="{StaticResource PageBg}"
-        FontFamily="Segoe UI" FontSize="13.5">
+        FontFamily="Segoe UI" FontSize="13.5"
+        PreviewKeyDown="MainWindow_PreviewKeyDown">
     <Grid>
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,28">
             <StackPanel MaxWidth="1400">
@@ -64,6 +65,9 @@
                                     </Style.Triggers>
                                 </Style>
                             </Button.Style>
+                        </Button>
+                        <Button Style="{StaticResource IconButton}" Click="OpenTicketSearch_Click" ToolTip="Find a ticket (Ctrl+K)" Margin="0,0,8,0">
+                            <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconSearch}" Stroke="{StaticResource Ink}" Width="16" Height="16"/>
                         </Button>
                         <Button Style="{StaticResource IconButton}" Click="OpenSettings_Click" ToolTip="Settings">
                             <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconSettings}" Stroke="{StaticResource Ink}" Width="16" Height="16"/>
@@ -188,6 +192,12 @@
                                     </StackPanel>
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <Button Style="{StaticResource PrimaryButton}" Click="LogTime_Click" Margin="0,0,8,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconPlus}" Stroke="White" Width="11" Height="11" Margin="0,0,5,0"/>
+                                            <TextBlock Text="Log Time" Foreground="White"/>
+                                        </StackPanel>
+                                    </Button>
                                     <Button Style="{StaticResource GhostButton}" Content="&#128279; Select from Jira" Click="OpenJira_Click" Margin="0,0,8,0"/>
                                     <Button Style="{StaticResource ActionButton}" Background="{StaticResource OrangeWash}" Foreground="#9A3412"
                                             BorderThickness="0" Click="OpenNeedsLogging_Click"
@@ -209,6 +219,7 @@
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="78"/>
+                                                                <ColumnDefinition Width="24"/>
                                                             </Grid.ColumnDefinitions>
                                                             <Border Grid.Column="0" Width="26" Height="26" CornerRadius="8" HorizontalAlignment="Left"
                                                                     Background="{Binding StatusCategory, Converter={StaticResource StatusCategoryToIconBackground}}">
@@ -243,6 +254,10 @@
                                                                 <TextBlock Text="{Binding Logged}" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Right"/>
                                                                 <TextBlock Text="{Binding ActivityKind}" FontSize="9.5" Foreground="{StaticResource Muted}" HorizontalAlignment="Right"/>
                                                             </StackPanel>
+                                                            <Button Grid.Column="5" Style="{StaticResource IconButton}" Width="22" Height="22" ToolTip="Log time on this ticket"
+                                                                    Click="TicketRowLogTime_Click" Tag="{Binding Key}">
+                                                                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconPlus}" Stroke="{StaticResource Blue}" Width="10" Height="10"/>
+                                                            </Button>
                                                         </Grid>
                                                         <StackPanel Margin="0,6,0,0" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVis}}">
                                                             <ItemsControl ItemsSource="{Binding Actions}">

@@ -136,4 +136,41 @@ public partial class MainWindow : Window
     {
         if (sender is FrameworkElement { DataContext: TicketRowViewModel row }) row.IsExpanded = !row.IsExpanded;
     }
+
+    private void LogTime_Click(object sender, RoutedEventArgs e) => OpenLogTime(null);
+
+    private void TicketRowLogTime_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { Tag: string key }) OpenLogTime(key);
+    }
+
+    private void OpenLogTime(string? presetTicketKey)
+    {
+        var logVm = new LogTimeViewModel(App.Jira, _vm.SelectedDate, presetTicketKey);
+        var dlg = new LogTimeWindow(logVm) { Owner = this };
+        logVm.PropertyChanged += async (_, e) =>
+        {
+            if (e.PropertyName == nameof(LogTimeViewModel.Saved) && logVm.Saved)
+                await _vm.RefreshCommand.ExecuteAsync(null);
+        };
+        dlg.ShowDialog();
+    }
+
+    private void OpenTicketSearch_Click(object sender, RoutedEventArgs e) => OpenTicketSearch();
+
+    private void OpenTicketSearch()
+    {
+        var searchVm = new TicketSearchViewModel(App.Jira);
+        var dlg = new TicketSearchWindow(searchVm) { Owner = this };
+        dlg.ShowDialog();
+    }
+
+    private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.K && Keyboard.Modifiers == ModifierKeys.Control)
+        {
+            OpenTicketSearch();
+            e.Handled = true;
+        }
+    }
 }

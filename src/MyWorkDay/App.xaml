@@ -45,6 +45,8 @@
             <PathGeometry x:Key="IconExternalLink" Figures="M18,13 v6 a2,2 0 0 1 -2,2 H5 a2,2 0 0 1 -2,-2 V8 a2,2 0 0 1 2,-2 H11 M15,3 L21,3 L21,9 M10,14 L21,3"/>
             <PathGeometry x:Key="IconBarChart" Figures="M12,20 L12,10 M18,20 L18,4 M6,20 L6,16"/>
             <PathGeometry x:Key="IconCheckmark" Figures="M20,6 L9,17 L4,12"/>
+            <PathGeometry x:Key="IconSearch" Figures="M3,11 A8,8 0 1 0 19,11 A8,8 0 1 0 3,11 M21,21 L16.65,16.65"/>
+            <PathGeometry x:Key="IconPlus" Figures="M12,5 L12,19 M5,12 L19,12"/>
 
             <Style x:Key="LineIcon" TargetType="Path">
                 <Setter Property="StrokeThickness" Value="2"/>

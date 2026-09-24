@@ -1,0 +1,81 @@
+<Window x:Class="MyWorkDay.Views.LogTimeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Log Time" Width="420" Height="480" MinWidth="380" MinHeight="420"
+        WindowStartupLocation="CenterOwner" Background="{StaticResource PageBg}"
+        FontFamily="Segoe UI" FontSize="13">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Log time" FontSize="16" FontWeight="Bold" Margin="0,0,0,2"/>
+                <TextBlock Text="{Binding DateLabel}" Style="{StaticResource MutedText}" Margin="0,0,0,14"/>
+
+                <TextBlock Text="Ticket" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Muted}" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding TicketKey, UpdateSourceTrigger=PropertyChanged}" Padding="8" Margin="0,0,0,8"
+                         CharacterCasing="Upper" x:Name="TicketKeyBox"/>
+
+                <TextBlock Text="Or find by text" FontSize="10.5" Foreground="{StaticResource Muted}" Margin="0,0,0,3"/>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding TicketSearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                              Padding="8" Margin="0,0,8,0" KeyDown="SearchBox_KeyDown" x:Name="SearchBox"/>
+                    <Button Grid.Column="1" Style="{StaticResource ActionButton}" Content="Find" Command="{Binding SearchTicketsCommand}"/>
+                </Grid>
+                <ItemsControl ItemsSource="{Binding SearchResults}" Margin="0,0,0,8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="White" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="8" Padding="8" Margin="0,0,0,4"
+                                    Cursor="Hand" MouseLeftButtonUp="SearchResult_Click" Tag="{Binding}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold" Foreground="{StaticResource Blue}" FontSize="12"/>
+                                        <TextBlock Text="{Binding Status}" FontSize="11" Foreground="{StaticResource Muted}" Margin="8,0,0,0"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Summary}" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="Time spent" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Muted}" Margin="0,4,0,4"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBox Text="{Binding Hours, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="8" Margin="0,0,6,0"/>
+                    <TextBlock Text="hours" VerticalAlignment="Center" Margin="0,0,14,0"/>
+                    <TextBox Text="{Binding Minutes, UpdateSourceTrigger=PropertyChanged}" Width="60" Padding="8" Margin="0,0,6,0"/>
+                    <TextBlock Text="minutes" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="Comment (optional)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Muted}" Margin="0,0,0,4"/>
+                <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}" Padding="8" Height="70"
+                         TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+
+                <TextBlock Text="{Binding StatusMessage}" Margin="0,10,0,0" TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource Red}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusOk}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource Green}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Style="{StaticResource ActionButton}" Content="Close" Click="Close_Click" Margin="0,0,8,0"/>
+            <Button Style="{StaticResource PrimaryButton}" Content="Save" Command="{Binding SaveCommand}"/>
+        </StackPanel>
+    </Grid>
+</Window>

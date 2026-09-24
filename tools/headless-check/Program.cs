@@ -44,4 +44,14 @@ Console.WriteLine($"After ChangeDateAsync({pastDateKey}): SelectedDate={mvm.Sele
 foreach (var t in mvm.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}]");
 
 Console.WriteLine();
-Console.WriteLine("OK - no exceptions.");
+Console.WriteLine("== JiraService.SearchTicketsAsync (read-only) ==");
+var searchHits = await jira.SearchTicketsAsync("landing page");
+Console.WriteLine($"Hits for 'landing page': {searchHits.Count}");
+foreach (var h in searchHits.Take(5)) Console.WriteLine($"  - {h.Key} ({h.Status}): {h.Summary}");
+
+var keyHit = await jira.SearchTicketsAsync("CAD-7539");
+Console.WriteLine($"Hits for exact key 'CAD-7539': {keyHit.Count}");
+foreach (var h in keyHit) Console.WriteLine($"  - {h.Key} ({h.Status}): {h.Summary}");
+
+Console.WriteLine();
+Console.WriteLine("OK - no exceptions. (AddWorklogAsync NOT exercised here - it writes real data to Jira.)");

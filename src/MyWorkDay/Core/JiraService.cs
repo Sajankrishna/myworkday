@@ -373,6 +373,90 @@ public sealed class JiraService
         return rows;
     }
 
+    /// <summary>Posts a real Jira worklog entry - the same effect as logging time from Jira's
+    /// own UI, just without leaving the app. `startedLocal` is the moment to log it against
+    /// (date + a time-of-day within that date, since Jira's worklog "started" is a full
+    /// timestamp, not just a date); this app defaults it to noon on the selected work-day.</summary>
+    public async Task<(bool Ok, string? Error)> AddWorklogAsync(string key, int minutes, string? comment, DateTimeOffset startedLocal)
+    {
+        var (b, e, t) = Creds();
+        if (b is null || e is null || t is null) return (false, "Connect Jira in Settings first.");
+        if (minutes <= 0) return (false, "Enter a time greater than zero.");
+        try
+        {
+            var body = new JsonObject
+            {
+                // Jira's own required format: yyyy-MM-ddTHH:mm:ss.SSS+HHMM (no colon in the
+                // offset) - DateTimeOffset's round-trip "o" format uses a colon, so this is
+                // built by hand instead of relying on a standard format string.
+                ["started"] = startedLocal.ToString("yyyy-MM-ddTHH:mm:ss.fff") + startedLocal.ToString("zzz").Replace(":", ""),
+                ["timeSpentSeconds"] = minutes * 60,
+            };
+            if (!string.IsNullOrWhiteSpace(comment)) body["comment"] = AdfParagraph(comment);
+
+            using var req = NewRequest(HttpMethod.Post, $"{b}/rest/api/3/issue/{key}/worklog", e, t);
+            req.Content = JsonContent.Create(body);
+            using var resp = await _http.SendAsync(req);
+            if (resp.IsSuccessStatusCode) return (true, null);
+
+            var errText = await resp.Content.ReadAsStringAsync();
+            return (false, $"Jira rejected the worklog (HTTP {(int)resp.StatusCode}): {Truncate(errText, 300)}");
+        }
+        catch (Exception ex)
+        {
+            _errorLog.Log($"AddWorklogAsync({key}) failed", ex);
+            return (false, $"Could not reach Jira: {ex.Message}");
+        }
+    }
+
+    private static JsonObject AdfParagraph(string text) => new()
+    {
+        ["type"] = "doc",
+        ["version"] = 1,
+        ["content"] = new JsonArray(new JsonObject
+        {
+            ["type"] = "paragraph",
+            ["content"] = new JsonArray(new JsonObject { ["type"] = "text", ["text"] = text }),
+        }),
+    };
+
+    private static string Truncate(string s, int len) => s.Length <= len ? s : s[..len];
+
+    /// <summary>Free-text/key search across the whole Jira instance (not scoped to "my"
+    /// issues) - the app's quick ticket lookup. A query that looks like a ticket key
+    /// ("CAD-1234") also matches on `key =`, so pasting or typing an exact key always works
+    /// even if JQL's text search wouldn't otherwise surface it (e.g. a very short summary).</summary>
+    public async Task<List<OpenTicketRow>> SearchTicketsAsync(string query)
+    {
+        var (b, e, t) = Creds();
+        var rows = new List<OpenTicketRow>();
+        if (b is null || e is null || t is null || string.IsNullOrWhiteSpace(query)) return rows;
+        try
+        {
+            var q = query.Trim().Replace("\"", "\\\"");
+            var looksLikeKey = System.Text.RegularExpressions.Regex.IsMatch(q, @"^[A-Za-z]+-\d+$");
+            var jql = looksLikeKey
+                ? $"key = \"{q.ToUpperInvariant()}\""
+                : $"text ~ \"{q}*\" ORDER BY updated DESC";
+            var issues = await SearchIssuesAsync(b, e, t, jql, new[] { "summary", "status", "timetracking" });
+            foreach (var i in issues.Take(20))
+                rows.Add(new OpenTicketRow
+                {
+                    Key = i.Key,
+                    Summary = i.Summary,
+                    Status = i.Status,
+                    StatusCategory = i.Category,
+                    ExpectedMinutes = i.ExpectedMinutes,
+                    JiraUrl = b + "/browse/" + i.Key,
+                });
+        }
+        catch (Exception ex)
+        {
+            _errorLog.Log("SearchTicketsAsync failed", ex);
+        }
+        return rows;
+    }
+
     public async Task<List<JiraUserSearchResult>> SearchUsersAsync(string query)
     {
         var (b, e, t) = Creds();
