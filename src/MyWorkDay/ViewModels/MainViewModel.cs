@@ -268,5 +268,11 @@ public sealed class ActivityItemViewModel
     public string Kind => Action.KindLabel;
     public string KindKey => Action.Kind; // "worklog" | "comment" - drives the timeline dot color
     public string Message => Action.Message;
-    public string? MinutesLabel => Action.Minutes > 0 ? DashboardStats.FormatMinutes(Action.Minutes) : null;
+
+    // Same headline shape the Python build's timeline used: "Logged Xm on " (real logged time
+    // takes priority) or "Commented on " / etc, with the ticket key appended separately so it
+    // can be colored/bolded on its own in the XAML.
+    public string HeadlinePrefix => Action.Minutes > 0
+        ? $"Logged {DashboardStats.FormatMinutes(Action.Minutes)} on "
+        : $"{Kind} on ";
 }

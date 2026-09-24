@@ -302,22 +302,26 @@
                                 <ItemsControl ItemsSource="{Binding Activity}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Grid Margin="0,0,0,10">
+                                            <!-- A real timeline rail: each item's dot connects to the next
+                                                 via a vertical line down its left edge, same as the Python
+                                                 build's .timeline::after connector. -->
+                                            <Grid Margin="0,0,0,2">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="56"/>
-                                                    <ColumnDefinition Width="14"/>
+                                                    <ColumnDefinition Width="16"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Grid.Column="0" Text="{Binding Time}" FontSize="10.5" Foreground="{StaticResource Muted}" VerticalAlignment="Top" Margin="0,2,0,0"/>
-                                                <Ellipse Grid.Column="1" Width="7" Height="7" VerticalAlignment="Top" Margin="0,4,0,0"
-                                                         Fill="{Binding KindKey, Converter={StaticResource ActivityKindToBrush}}"/>
-                                                <StackPanel Grid.Column="2">
-                                                    <TextBlock FontSize="12">
-                                                        <Run Text="{Binding Kind, Mode=OneWay}" FontWeight="Bold"/>
-                                                        <Run Text=" on "/>
+                                                <Grid Grid.Column="1" VerticalAlignment="Stretch">
+                                                    <Border x:Name="Rail" Width="1" Background="{StaticResource Line}" HorizontalAlignment="Center"
+                                                            Margin="0,11,0,-2"/>
+                                                    <Ellipse Width="7" Height="7" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,4,0,0"
+                                                             Fill="{Binding KindKey, Converter={StaticResource ActivityKindToBrush}}"/>
+                                                </Grid>
+                                                <StackPanel Grid.Column="2" Margin="0,0,0,10">
+                                                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                                                        <Run Text="{Binding HeadlinePrefix, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
                                                         <Run Text="{Binding Ticket, Mode=OneWay}" Foreground="{StaticResource Blue}" FontWeight="Bold"/>
-                                                        <Run Text=" "/>
-                                                        <Run Text="{Binding MinutesLabel, Mode=OneWay}" Foreground="{StaticResource Muted}"/>
                                                     </TextBlock>
                                                     <TextBlock Text="{Binding Message}" FontSize="11" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
                                                 </StackPanel>
