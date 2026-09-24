@@ -31,6 +31,7 @@ Console.WriteLine("== DashboardService.RefreshAsync() (today) ==");
 var dashboard = new DashboardService(jira, config, errorLog);
 var todayData = await dashboard.RefreshAsync();
 Console.WriteLine($"SelectedDate={todayData.SelectedDate} (WorkDate.Today={WorkDate.Today()}) Tickets={todayData.Tickets.Count}");
+Console.WriteLine($"Dropdown Dates: {string.Join(", ", todayData.Dates)}");
 foreach (var t in todayData.Tickets) Console.WriteLine($"  - {t.Key} [{t.ActivityKind}] logged={t.LoggedMinutes}m");
 Console.WriteLine($"NeedsLogging={todayData.NeedsLogging.Count}");
 foreach (var n in todayData.NeedsLogging) Console.WriteLine($"  - {n.Key} ({n.Status}) expected={(n.ExpectedMinutes is { } m ? m + "m" : "none")}");

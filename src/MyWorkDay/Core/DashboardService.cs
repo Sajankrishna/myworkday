@@ -178,7 +178,17 @@ public sealed class DashboardService
             })
             .OrderByDescending(d => d.Minutes).Take(8).ToList();
 
-        var dates = new List<string> { today };
+        // This week's working days (Mon-Fri), up to and including today - never a future date,
+        // even within the same week. Still includes the actual selected date if it falls
+        // outside that range (an older week reached via the date-jump picker), so the dropdown
+        // never silently loses track of what's currently shown.
+        var todayDate = WorkDate.Parse(today);
+        var monday = todayDate.AddDays(-(((int)todayDate.DayOfWeek + 6) % 7));
+        var dates = Enumerable.Range(0, 5)
+            .Select(i => monday.AddDays(i))
+            .Where(d => d <= todayDate)
+            .Select(d => d.ToString("yyyy-MM-dd"))
+            .ToList();
         if (!dates.Contains(dateKey)) dates.Add(dateKey);
 
         var initials = _displayName != "there" && !string.IsNullOrWhiteSpace(_displayName)

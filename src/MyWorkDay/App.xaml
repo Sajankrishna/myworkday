@@ -70,6 +70,7 @@
             <conv:IndexToPaletteBrushConverter x:Key="IndexToPaletteBrush"/>
             <conv:NeedsLoggingCountToLabelConverter x:Key="NeedsLoggingCountToLabel"/>
             <conv:MinutesLabelConverter x:Key="MinutesLabel"/>
+            <conv:StatusToColorConverter x:Key="StatusToColor"/>
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
             <Style x:Key="CardStyle" TargetType="Border">
@@ -106,7 +107,7 @@
             <Style x:Key="StatusPillText" TargetType="TextBlock">
                 <Setter Property="FontSize" Value="10.5"/>
                 <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Foreground" Value="{Binding StatusCategory, Converter={StaticResource StatusCategoryToForeground}}"/>
+                <Setter Property="Foreground" Value="{Binding Status, Converter={StaticResource StatusToColor}}"/>
             </Style>
 
             <Style x:Key="ActionButton" TargetType="Button">

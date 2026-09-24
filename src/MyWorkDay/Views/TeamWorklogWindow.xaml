@@ -109,5 +109,27 @@
                 </StackPanel>
             </ScrollViewer>
         </Border>
+
+        <Border Grid.RowSpan="3" Background="#CCEEF3FB" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Path Style="{StaticResource LineIcon}" Data="{StaticResource IconRefresh}" Stroke="{StaticResource Muted}"
+                      Width="22" Height="22" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                    <Path.RenderTransform>
+                        <RotateTransform/>
+                    </Path.RenderTransform>
+                    <Path.Triggers>
+                        <EventTrigger RoutedEvent="Path.Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                      From="0" To="360" Duration="0:0:0.9" RepeatBehavior="Forever"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Path.Triggers>
+                </Path>
+                <TextBlock Text="Loading team worklog&#8230;" FontSize="13" Foreground="{StaticResource Muted}" Margin="0,8,0,0"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
