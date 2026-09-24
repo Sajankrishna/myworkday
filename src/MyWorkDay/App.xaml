@@ -97,6 +97,121 @@
                 <Setter Property="BorderThickness" Value="0"/>
             </Style>
 
+            <!-- ============================================================
+                 Dropdown (ComboBox) styling, ported from Ezee.Church's
+                 FormComboBox: a rounded, outlined "card-style" field - white
+                 fill, thin gray border, 6px corners, an emerald-green focus
+                 ring, and a blue-accented selected/hovered dropdown item.
+                 Ezee builds this as a bordered shell wrapped around a
+                 borderless HandyControl ComboBox; this app has no
+                 HandyControl dependency, so the same look is reproduced
+                 directly as a native ComboBox ControlTemplate instead -
+                 same colors, same shape, applied to every ComboBox in the
+                 app (implicit style, no x:Key). ============================================================ -->
+            <SolidColorBrush x:Key="EzeeBorder" Color="#D1D5DB"/>
+            <SolidColorBrush x:Key="EzeeFocusBorder" Color="#10B981"/>
+            <SolidColorBrush x:Key="EzeeSelectedBg" Color="#3B82F6"/>
+            <SolidColorBrush x:Key="EzeeSelectedHoverBg" Color="#2563EB"/>
+            <SolidColorBrush x:Key="EzeeHoverBg" Color="#F3F4F6"/>
+            <SolidColorBrush x:Key="EzeeTextPrimary" Color="#111827"/>
+            <SolidColorBrush x:Key="EzeePlaceholder" Color="#9CA3AF"/>
+
+            <Style TargetType="ComboBoxItem">
+                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="Foreground" Value="{StaticResource EzeeTextPrimary}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBoxItem">
+                            <Border x:Name="ItemBorder" CornerRadius="6" Margin="4,2" Padding="{TemplateBinding Padding}"
+                                    Background="Transparent">
+                                <ContentPresenter/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource EzeeHoverBg}"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource EzeeSelectedBg}"/>
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                                <MultiTrigger>
+                                    <MultiTrigger.Conditions>
+                                        <Condition Property="IsSelected" Value="True"/>
+                                        <Condition Property="IsHighlighted" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter TargetName="ItemBorder" Property="Background" Value="{StaticResource EzeeSelectedHoverBg}"/>
+                                </MultiTrigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="ComboBox">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="Foreground" Value="{StaticResource EzeeTextPrimary}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource EzeeBorder}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="10,7"/>
+                <Setter Property="FontSize" Value="12.5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ComboBox">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border x:Name="Shell" Grid.ColumnSpan="2" CornerRadius="6" Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"/>
+
+                                <ToggleButton x:Name="ToggleButton" Grid.ColumnSpan="2" Focusable="False"
+                                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                              ClickMode="Press" Background="Transparent" BorderThickness="0">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="Transparent"/>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+
+                                <ContentPresenter x:Name="ContentSite" Grid.Column="0" IsHitTestVisible="False"
+                                                   Margin="{TemplateBinding Padding}"
+                                                   HorizontalAlignment="Left" VerticalAlignment="Center"
+                                                   Content="{TemplateBinding SelectionBoxItem}"
+                                                   ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+
+                                <Path x:Name="Arrow" Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center"
+                                      Data="M0,0 L6,6 L12,0" Stroke="{StaticResource EzeePlaceholder}" StrokeThickness="1.6"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False"/>
+
+                                <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}"
+                                       AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                    <Border MinWidth="{TemplateBinding ActualWidth}" MaxHeight="320" Margin="0,4,0,0"
+                                            Background="White" BorderBrush="{StaticResource EzeeBorder}" BorderThickness="1" CornerRadius="8">
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="16" ShadowDepth="3" Direction="270"/>
+                                        </Border.Effect>
+                                        <ScrollViewer Padding="2" SnapsToDevicePixels="True">
+                                            <ItemsPresenter/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                    <Setter TargetName="Shell" Property="BorderBrush" Value="{StaticResource EzeeFocusBorder}"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Shell" Property="Opacity" Value="0.6"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
