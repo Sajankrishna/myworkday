@@ -83,26 +83,65 @@
                             <GradientStop Color="#F4EEFC" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="52" Height="52" CornerRadius="26" Background="{StaticResource Blue}" Margin="0,0,16,0">
-                            <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="16"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Greeting}" FontSize="12.5" Foreground="{StaticResource Muted}"/>
-                            <TextBlock Text="{Binding AuthorName}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
-                            <TextBlock FontSize="12" FontStyle="Italic" Foreground="{StaticResource Muted}" Margin="0,3,0,0">
-                                <Run Text="&#8220;"/>
-                                <Run Text="{Binding DailyQuote}"/>
-                                <Run Text="&#8221;"/>
-                            </TextBlock>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Border Width="52" Height="52" CornerRadius="26" Background="{StaticResource Blue}" Margin="0,0,16,0">
+                                <TextBlock Text="{Binding Initials}" Foreground="White" FontWeight="Bold" FontSize="16"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Greeting}" FontSize="12.5" Foreground="{StaticResource Muted}"/>
+                                <TextBlock Text="{Binding AuthorName}" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Ink}"/>
+                                <TextBlock FontSize="12" FontStyle="Italic" Foreground="{StaticResource Muted}" Margin="0,3,0,0">
+                                    <Run Text="&#8220;"/>
+                                    <Run Text="{Binding DailyQuote}"/>
+                                    <Run Text="&#8221;"/>
+                                </TextBlock>
+                            </StackPanel>
                         </StackPanel>
-                        <Border Background="White" CornerRadius="10" Padding="14,8" Margin="24,0,0,0" VerticalAlignment="Center"
-                                BorderBrush="#DCE6F7" BorderThickness="1"
-                                Visibility="{Binding CalendarSummary, Converter={StaticResource NullToVis}}">
-                            <TextBlock Text="{Binding CalendarSummary}" FontSize="11.5" FontWeight="SemiBold" Foreground="#1E3A8A"/>
-                        </Border>
-                    </StackPanel>
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <Border Background="White" CornerRadius="10" Padding="14,8" Margin="0,0,24,0" VerticalAlignment="Center"
+                                    BorderBrush="#DCE6F7" BorderThickness="1"
+                                    Visibility="{Binding CalendarSummary, Converter={StaticResource NullToVis}}">
+                                <TextBlock Text="{Binding CalendarSummary}" FontSize="11.5" FontWeight="SemiBold" Foreground="#1E3A8A"/>
+                            </Border>
+
+                            <!-- Decorative illustration - exact shapes/colors ported from the
+                                 Python build's own inline SVG (viewBox 0 0 200 130): a desk with
+                                 a laptop showing 3 lines of "code", a person silhouette, a
+                                 potted plant, and a notepad. Purely decorative, never a data
+                                 claim. -->
+                            <Border BorderBrush="{StaticResource Blue}" BorderThickness="0,0,3,0" Padding="0,0,10,0" Margin="0,0,10,0">
+                                <TextBlock Text="Build today for a better tomorrow" FontSize="12" FontWeight="SemiBold" Foreground="#1E3A8A"
+                                           TextAlignment="Right" TextWrapping="Wrap" MaxWidth="100"/>
+                            </Border>
+                            <Viewbox Width="150" Height="97.5">
+                                <Canvas Width="200" Height="130">
+                                    <Rectangle Canvas.Left="14" Canvas.Top="104" Width="160" Height="7" RadiusX="2" RadiusY="2" Fill="#CBD5E1"/>
+                                    <Rectangle Canvas.Left="68" Canvas.Top="52" Width="70" Height="48" RadiusX="4" RadiusY="4" Fill="#1E293B"/>
+                                    <Rectangle Canvas.Left="74" Canvas.Top="58" Width="58" Height="36" RadiusX="2" RadiusY="2" Fill="#0F172A"/>
+                                    <Line X1="80" Y1="67" X2="118" Y2="67" Stroke="#38BDF8" StrokeThickness="2.5"/>
+                                    <Line X1="80" Y1="75" X2="108" Y2="75" Stroke="#38BDF8" StrokeThickness="2.5"/>
+                                    <Line X1="80" Y1="83" X2="124" Y2="83" Stroke="#38BDF8" StrokeThickness="2.5"/>
+                                    <Rectangle Canvas.Left="96" Canvas.Top="100" Width="14" Height="7" Fill="#334155"/>
+                                    <Path Data="M38,104 L43,84 Q58,74 73,84 L78,104 Z" Fill="#2563EB"/>
+                                    <Ellipse Canvas.Left="45" Canvas.Top="45" Width="26" Height="26" Fill="#F5B25A"/>
+                                    <Rectangle Canvas.Left="150" Canvas.Top="90" Width="15" Height="15" RadiusX="2" RadiusY="2" Fill="#B45309"/>
+                                    <Ellipse Canvas.Left="148" Canvas.Top="79" Width="12" Height="12" Fill="#22C55E"/>
+                                    <Ellipse Canvas.Left="157" Canvas.Top="77" Width="12" Height="12" Fill="#16A34A"/>
+                                    <Ellipse Canvas.Left="152" Canvas.Top="71" Width="12" Height="12" Fill="#22C55E"/>
+                                    <Rectangle Canvas.Left="26" Canvas.Top="94" Width="12" Height="10" RadiusX="2" RadiusY="2"
+                                               Fill="White" Stroke="#CBD5E1" StrokeThickness="1.2"/>
+                                </Canvas>
+                            </Viewbox>
+                        </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- Stat row -->
